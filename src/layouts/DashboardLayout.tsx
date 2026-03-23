@@ -1,19 +1,22 @@
 import * as React from 'react';
-import Sidebar from '../components/Sidebar';
-import Navbar from '../components/Navbar';
+import Sidebar from '../components/layout/Sidebar';
+import Navbar from '../components/layout/Navbar';
 
-interface DashboardLayoutProps {
-  children: React.ReactNode;
-}
-
-const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
+const DashboardLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   return (
-    <div className="flex min-h-screen">
-      <Sidebar />
-      <div className="flex-1 flex flex-col">
+    <div style={{ display: 'flex' }}>
+      {/* Sidebar */}
+      <aside style={{ width: '280px', flexShrink: 0 }}>
+        <Sidebar />
+      </aside>
+
+      {/* Main Content */}
+      <main style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
         <Navbar />
-        <main className="p-6 bg-gray-100 flex-1">{children}</main>
-      </div>
+        <div style={{ flex: 1, padding: '20px', overflowY: 'auto', backgroundColor: '#f9fafb' }}>
+          {children}
+        </div>
+      </main>
     </div>
   );
 };

@@ -31,5 +31,5 @@
       "@types": ["types/index"]
     }
   },
-  "include": ["src"]
+  "include": ["src", "tailwind.config.cjs"]
 }

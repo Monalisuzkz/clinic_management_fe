@@ -28,3 +28,13 @@ input, button, textarea, select {
   object-fit: cover;         /* ensures it fills the circle nicely */
   display: block;
 }
+
+body {
+  margin: 0;
+  padding: 0;
+  box-shadow: none;
+}
+
+#root {
+  box-shadow: none;
+}
