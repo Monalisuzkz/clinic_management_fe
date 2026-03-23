@@ -1,108 +1,73 @@
-# React + TypeScript App Setup
+# React + TypeScript + Vite
 
-This guide helps you create a React app with TypeScript using **pnpm**.
+This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
 
-## Prerequisites
+Currently, two official plugins are available:
 
-Before starting, make sure you have:
+- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
+- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
 
-- **Node.js** installed
-- **pnpm** installed globally
+## React Compiler
 
-Check your versions:
+The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
 
-```bash
-node -v
-pnpm -v
+## Expanding the ESLint configuration
+
+If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+
+```js
+export default defineConfig([
+  globalIgnores(['dist']),
+  {
+    files: ['**/*.{ts,tsx}'],
+    extends: [
+      // Other configs...
+
+      // Remove tseslint.configs.recommended and replace with this
+      tseslint.configs.recommendedTypeChecked,
+      // Alternatively, use this for stricter rules
+      tseslint.configs.strictTypeChecked,
+      // Optionally, add this for stylistic rules
+      tseslint.configs.stylisticTypeChecked,
+
+      // Other configs...
+    ],
+    languageOptions: {
+      parserOptions: {
+        project: ['./tsconfig.node.json', './tsconfig.app.json'],
+        tsconfigRootDir: import.meta.dirname,
+      },
+      // other options...
+    },
+  },
+])
 ```
 
-Install pnpm globally if needed:
+You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
 
-```bash
-npm install -g pnpm
+```js
+// eslint.config.js
+import reactX from 'eslint-plugin-react-x'
+import reactDom from 'eslint-plugin-react-dom'
+
+export default defineConfig([
+  globalIgnores(['dist']),
+  {
+    files: ['**/*.{ts,tsx}'],
+    extends: [
+      // Other configs...
+      // Enable lint rules for React
+      reactX.configs['recommended-typescript'],
+      // Enable lint rules for React DOM
+      reactDom.configs.recommended,
+    ],
+    languageOptions: {
+      parserOptions: {
+        project: ['./tsconfig.node.json', './tsconfig.app.json'],
+        tsconfigRootDir: import.meta.dirname,
+      },
+      // other options...
+    },
+  },
+])
 ```
-
-## Create the App
-
-You can create a React + TypeScript app using Vite:
-
-```bash
-pnpm create vite my-app --template react-ts
-```
-
-Go to the project folder:
-
-```bash
-cd my-app
-```
-
-## Install Dependencies
-
-```bash
-pnpm install
-```
-
-## Start the Development Server
-
-```bash
-pnpm dev
-```
-
-After running the command, open the local URL shown in your terminal.
-
-## Build for Production
-
-```bash
-pnpm build
-```
-
-## Preview the Production Build
-
-```bash
-pnpm preview
-```
-
-## Recommended Project Structure
-
-```bash
-my-app/
-├── public/
-├── src/
-│   ├── assets/
-│   ├── components/
-│   ├── pages/
-│   ├── App.tsx
-│   ├── main.tsx
-│   └── index.css
-├── package.json
-├── tsconfig.json
-├── vite.config.ts
-└── README.md
-```
-
-## Useful pnpm Commands
-
-Install a package:
-
-```bash
-pnpm add package-name
-```
-
-Install a dev dependency:
-
-```bash
-pnpm add -D package-name
-```
-
-Remove a package:
-
-```bash
-pnpm remove package-name
-```
-
-## Notes
-
-- This setup uses **Vite** for fast development.
-- TypeScript is already configured with the `react-ts` template.
-- You can now start building your components inside the `src` folder.
-
