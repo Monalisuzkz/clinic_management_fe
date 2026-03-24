@@ -9,6 +9,8 @@ import Billing from '../pages/Billing/Billing';
 import EPrescribing from '../pages/EPrescribing/EPrescribing';
 import Reports from '../pages/Reports/Reports';
 import Inventory from '../pages/Inventory/Inventory';
+import Profile from '../pages/Profile/Profile';
+
 // Layout wrapper for pages that need Sidebar + Navbar
 const LayoutWrapper: React.FC = () => {
   return (
@@ -34,6 +36,7 @@ const AppRoutes: React.FC = () => {
           <Route path="/e-prescribing" element={<EPrescribing />} />
           <Route path="/reports" element={<Reports />} />
           <Route path="/inventory" element={<Inventory />} />
+          <Route path="/profile" element={<Profile />} />
         </Route>
 
         {/* Default redirect */}

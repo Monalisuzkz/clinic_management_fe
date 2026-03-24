@@ -1,4 +1,4 @@
-import * as React from 'react';
+
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import DashboardLayout from './layouts/DashboardLayout';
 import Login from './pages/Login/Login';
@@ -9,6 +9,7 @@ import EPrescribing from './pages/EPrescribing/EPrescribing';
 import Billing from './pages/Billing/Billing';
 import Inventory from './pages/Inventory/Inventory';
 import Reports from './pages/Reports/Reports';
+import Profile from 'pages/Profile/Profile';
 
 function App() {
   return (
@@ -27,6 +28,7 @@ function App() {
                 <Route path="/billing" element={<Billing />} />
                 <Route path="/inventory" element={<Inventory />} />
                 <Route path="/reports" element={<Reports />} />
+                <Route path="/profile" element={<Profile />} />
               </Routes>
             </DashboardLayout>
           }

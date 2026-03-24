@@ -91,7 +91,7 @@ const Navbar: React.FC = () => {
 
           {showUserMenu && (
             <div className="dropdown user-dropdown">
-              <a href="#" className="dropdown-item">
+              <a href="/profile" className="dropdown-item">
                 <User size={16} /> Profile
               </a>
               <hr className="dropdown-divider" />
