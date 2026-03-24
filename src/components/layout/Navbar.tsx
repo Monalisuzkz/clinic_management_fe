@@ -49,7 +49,9 @@ const Navbar: React.FC = () => {
             onClick={() => setShowNotifications(!showNotifications)}
           >
             <Bell size={20} />
-            <span className="notification-badge">3</span>
+            <span className="notification-badge">
+              {notifications.length > 9 ? '9+' : notifications.length}
+            </span>
           </button>
 
           {showNotifications && (

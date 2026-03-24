@@ -98,16 +98,13 @@
 
 /* Navbar Button */
 .navbar-button {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
+  position: relative;
   background: none;
   border: none;
   cursor: pointer;
-  color: #64748b;
-  transition: color 0.2s;
-  padding: 0;
-  font-size: 1rem;
+  padding: 8px;
+  display: flex;
+  align-items: center;
 }
 
 .navbar-button:hover {
@@ -121,6 +118,9 @@
 
 /* Notification Badge */
 .notification-badge {
+  position: absolute;
+  top: 0px; 
+  right: 0px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -130,6 +130,7 @@
   color: white;
   border-radius: 50%;
   font-size: 0.75rem;
+  pointer-events: none;
   font-weight: 700;
 }
 
@@ -216,6 +217,11 @@
   border-bottom: 1px solid #f1f5f9;
   transition: background 0.2s;
   cursor: pointer;
+}
+
+.notification-item {
+  position: relative;
+  display: inline-flex;
 }
 
 .notification-item-content:hover {
