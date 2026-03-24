@@ -1,0 +1,17 @@
+/* Appointment Header */
+.appointment-header {
+  margin-bottom: 1.5rem;
+}
+
+.appointment-title {
+  font-size: 2.25rem;
+  font-weight: 800;
+  color: #0f172a;
+  margin-bottom: 0.5rem;
+  letter-spacing: -0.5px;
+}
+
+.appointment-subtitle {
+  font-size: 1rem;
+  color: #64748b;
+}

@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Home, Calendar, FileText, CreditCard, File, Box, BarChart, LogOut } from 'lucide-react';
+import { Home, Calendar, FileText, CreditCard, File, Box, BarChart} from 'lucide-react';
 import './Sidebar.css';
 
 const menuItems = [
@@ -16,40 +16,28 @@ const menuItems = [
 const Sidebar: React.FC = () => {
   const location = useLocation();
 
-  const handleLogout = () => {
-    console.log('Logout clicked');
-    // Add logout logic here
-  };
-
   return (
-    <aside className="sidebar">
-      <h2>Clinic System</h2>
-      <ul className="menu-main">
-        {menuItems.map((item) => {
-          const isActive = location.pathname.startsWith(item.path);
-          return (
-            <li key={item.name}>
-              <Link
-                to={item.path}
-                className={isActive ? 'active' : ''}
-              >
-                {item.icon}
-                <span>{item.name}</span>
-              </Link>
-            </li>
-          );
-        })}
-      </ul>
-
-      <ul className="menu-bottom">
-        <li>
-          <button onClick={handleLogout} className="logout-btn">
-            <LogOut size={18} />
-            <span>Logout</span>
-          </button>
-        </li>
-      </ul>
-    </aside>
+    <>
+      <aside className="sidebar">
+        <h2>Clinic System</h2>
+        <ul className="menu-main">
+          {menuItems.map((item) => {
+            const isActive = location.pathname.startsWith(item.path);
+            return (
+              <li key={item.name}>
+                <Link
+                  to={item.path}
+                  className={isActive ? 'active' : ''}
+                >
+                  {item.icon}
+                  <span>{item.name}</span>
+                </Link>
+              </li>
+            );
+          })}
+        </ul>
+      </aside>
+    </>
   );
 };
 

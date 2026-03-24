@@ -1,7 +1,7 @@
 import * as React from 'react';
-import DashboardLayout from '../../layouts/DashboardLayout';
 import { Users, Calendar, FileText, DollarSign, TrendingUp, Clock, Activity } from 'lucide-react';
 import './dashboard.css';
+
 
 const stats = [
   { title: 'Total Patients', value: '1,245', icon: Users, color: '#3B82F6', trend: '+12%' },
@@ -26,7 +26,7 @@ const appointments = [
 
 const Dashboard: React.FC = () => {
   return (
-    <DashboardLayout>
+    <>
       {/* Header */}
       <div className="dashboard-header">
         <h1 className="dashboard-title">Clinic Management Dashboard</h1>
@@ -47,10 +47,10 @@ const Dashboard: React.FC = () => {
                   <p className="stat-label">{stat.title}</p>
                   <h3 className="stat-value">{stat.value}</h3>
                 </div>
+                <div className="stat-trend-badge" style={{ color: stat.color }}>
+                  <TrendingUp size={14} /> {stat.trend}
+                </div>
               </div>
-              <p className="stat-trend" style={{ color: stat.color }}>
-                <TrendingUp size={12} /> {stat.trend}
-              </p>
             </div>
           );
         })}
@@ -146,7 +146,7 @@ const Dashboard: React.FC = () => {
           </table>
         </div>
       </div>
-    </DashboardLayout>
+    </>
   );
 };
 
