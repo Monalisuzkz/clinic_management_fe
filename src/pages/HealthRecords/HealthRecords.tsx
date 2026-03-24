@@ -51,9 +51,9 @@ const HealthRecords: React.FC = () => {
   return (
     <>
       {/* Header */}
-      <div className="appointment-header">
-        <h1 className="appointment-title">E-Health Records</h1>
-        <p className="appointment-subtitle">Centralized patient medical history</p>
+      <div className="healthrecords-header">
+        <h1 className="healthrecords-title">E-Health Records</h1>
+        <p className="healthrecords-subtitle">Centralized patient medical history</p>
       </div>
     <div>
         <button className="btn-primary">
