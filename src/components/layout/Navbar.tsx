@@ -1,8 +1,8 @@
-import * as React from 'react';
-import {useNavigate } from 'react-router-dom';
-import { Bell, User } from 'lucide-react';
-import LogoutModal from '../modals/LogoutModal';
-import './Navbar.css';
+import * as React from "react";
+import { useNavigate } from "react-router-dom";
+import { Bell, User } from "lucide-react";
+import LogoutModal from "../modals/LogoutModal";
+import "./Navbar.css";
 
 const Navbar: React.FC = () => {
   const navigate = useNavigate();
@@ -16,9 +16,9 @@ const Navbar: React.FC = () => {
 
   const handleConfirmLogout = () => {
     // Clear any auth tokens/data if needed
-    localStorage.removeItem('authToken'); // Example
+    localStorage.removeItem("authToken"); // Example
     setShowLogoutModal(false);
-    navigate('/login', { replace: true });
+    navigate("/login", { replace: true });
   };
 
   const handleCancelLogout = () => {
@@ -27,15 +27,15 @@ const Navbar: React.FC = () => {
 
   // Mock notifications
   const notifications = [
-    { id: 1, message: 'New appointment scheduled', time: '5 mins ago' },
-    { id: 2, message: 'Lab results ready for review', time: '30 mins ago' },
-    { id: 3, message: 'Inventory low stock alert', time: '1 hour ago' },
+    { id: 1, message: "New appointment scheduled", time: "5 mins ago" },
+    { id: 2, message: "Lab results ready for review", time: "30 mins ago" },
+    { id: 3, message: "Inventory low stock alert", time: "1 hour ago" },
   ];
 
   const currentUser = {
-    name: 'Dr. Admin',
-    role: 'Administrator',
-    avatar: '👨‍⚕️',
+    name: "Dr. Admin",
+    role: "Administrator",
+    avatar: "👨‍⚕️",
   };
 
   return (
@@ -50,7 +50,7 @@ const Navbar: React.FC = () => {
           >
             <Bell size={20} />
             <span className="notification-badge">
-              {notifications.length > 9 ? '9+' : notifications.length}
+              {notifications.length > 9 ? "9+" : notifications.length}
             </span>
           </button>
 
@@ -95,19 +95,19 @@ const Navbar: React.FC = () => {
                 <User size={16} /> Profile
               </a>
               <hr className="dropdown-divider" />
-                <a onClick={handleLogoutClick} className="dropdown-item logout">
+              <a onClick={handleLogoutClick} className="dropdown-item logout">
                 Logout
               </a>
-            </div>    
+            </div>
           )}
-            {/* Logout Modal */}
-            <LogoutModal
-                isOpen={showLogoutModal}
-                onConfirm={handleConfirmLogout}
-                onCancel={handleCancelLogout}
-                />
+          {/* Logout Modal */}
+          <LogoutModal
+            isOpen={showLogoutModal}
+            onConfirm={handleConfirmLogout}
+            onCancel={handleCancelLogout}
+          />
         </div>
-      </div>  
+      </div>
     </nav>
   );
 };

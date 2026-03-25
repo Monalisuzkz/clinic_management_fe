@@ -2,30 +2,39 @@
 @tailwind components;
 
 /* Global font settings */
-html, body {
-  font-family: 'Inter', sans-serif;
+html,
+body {
+  font-family: "Inter", sans-serif;
   font-size: 16px;
   line-height: 1.5;
   color: #1f2937; /* default text color */
 }
 
 /* Headings use Merriweather */
-h1, h2, h3, h4, h5, h6 {
-  font-family: 'Merriweather', serif;
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: "Merriweather", serif;
   font-weight: 700; /* bold headings */
-  color: #111827;   /* optional: darker for emphasis */
+  color: #111827; /* optional: darker for emphasis */
 }
 
 /* Ensure forms, buttons, and inputs inherit Inter */
-input, button, textarea, select {
-  font-family: 'Inter', sans-serif;
+input,
+button,
+textarea,
+select {
+  font-family: "Inter", sans-serif;
 }
 
 .global-logo {
-  width: 80px;               /* adjust size as needed */
+  width: 80px; /* adjust size as needed */
   height: 80px;
-  border-radius: 50%;        /* makes it circular */
-  object-fit: cover;         /* ensures it fills the circle nicely */
+  border-radius: 50%; /* makes it circular */
+  object-fit: cover; /* ensures it fills the circle nicely */
   display: block;
 }
 

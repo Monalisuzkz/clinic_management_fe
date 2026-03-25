@@ -1,6 +1,5 @@
-import * as React from 'react';
-import './reports.css';
-
+import * as React from "react";
+import "./reports.css";
 
 const Reports: React.FC = () => {
   return (

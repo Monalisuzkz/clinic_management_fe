@@ -1,21 +1,21 @@
-import * as React from 'react';
-import { useNavigate } from 'react-router-dom';
-import './Login.css';
+import * as React from "react";
+import { useNavigate } from "react-router-dom";
+import "./Login.css";
 
 const Login: React.FC = () => {
   const navigate = useNavigate();
-  const [email, setEmail] = React.useState('');
-  const [password, setPassword] = React.useState('');
+  const [email, setEmail] = React.useState("");
+  const [password, setPassword] = React.useState("");
   const [rememberMe, setRememberMe] = React.useState(false); // new state
-  const [error, setError] = React.useState('');
+  const [error, setError] = React.useState("");
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (email === 'admin@clinic.com' && password === 'password') {
-      navigate('/dashboard');
+    if (email === "admin@clinic.com" && password === "password") {
+      navigate("/dashboard");
     } else {
-      setError('Invalid email or password');
+      setError("Invalid email or password");
     }
   };
 
@@ -71,4 +71,4 @@ const Login: React.FC = () => {
   );
 };
 
-export default Login; 
+export default Login;

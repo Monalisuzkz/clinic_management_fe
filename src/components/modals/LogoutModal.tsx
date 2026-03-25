@@ -1,5 +1,5 @@
-import * as React from 'react';
-import './LogoutModal.css';
+import * as React from "react";
+import "./LogoutModal.css";
 
 interface LogoutModalProps {
   isOpen: boolean;
@@ -7,7 +7,11 @@ interface LogoutModalProps {
   onCancel: () => void;
 }
 
-const LogoutModal: React.FC<LogoutModalProps> = ({ isOpen, onConfirm, onCancel }) => {
+const LogoutModal: React.FC<LogoutModalProps> = ({
+  isOpen,
+  onConfirm,
+  onCancel,
+}) => {
   if (!isOpen) return null;
 
   return (
