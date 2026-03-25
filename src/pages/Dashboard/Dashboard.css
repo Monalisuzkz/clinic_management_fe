@@ -17,14 +17,15 @@
   color: #64748b;
 }
 
+/* Stats Grid - With Colored Bars */
 .stats-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 1rem;
   margin-bottom: 2rem;
 }
+
 .stat-card {
-  background: white;
   border-radius: 0.75rem;
   overflow: hidden;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
@@ -32,9 +33,6 @@
   cursor: pointer;
   display: flex;
   flex-direction: column;
-}
-.stat-card::before {
-  display: none;
 }
 
 .stat-card:hover {
@@ -166,6 +164,149 @@
 }
 
 /* Activity Card */
+
+/* Add to your dashboard.css */
+
+/* Card with fixed height */
+.activity-card,
+.appointments-card {
+  height: 465px; /* Fixed height for both cards */
+  display: flex;
+  flex-direction: column;
+  overflow: hidden; /* Prevents content from overflowing */
+}
+
+/* Fixed Header Table Styles */
+.table-header {
+  flex-shrink: 0; /* Prevents header from shrinking */
+  border-bottom: 2px solid #f1f5f9;
+  background: #f8fafc;
+  border-radius: 0.625rem 0.625rem 0 0;
+}
+
+.appointments-table.fixed-header {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.appointments-table.fixed-header th {
+  padding: 1rem;
+  text-align: left;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  background: #f8fafc;
+}
+
+/* Scrollable Body Table */
+.table-container.scrollable {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: auto;
+  min-height: 0;
+}
+
+.appointments-table.scrollable-body {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.appointments-table.scrollable-body tbody tr {
+  border-bottom: 1px solid #f1f5f9;
+  transition: background 0.2s;
+}
+
+.appointments-table.scrollable-body tbody tr:hover {
+  background: #f8fafc;
+}
+
+.appointments-table.scrollable-body td {
+  padding: 1rem;
+  font-size: 0.95rem;
+  color: #0f172a;
+}
+
+/* Ensure column widths align between header and body */
+.appointments-table.fixed-header th,
+.appointments-table.scrollable-body td {
+  width: auto;
+}
+
+.appointments-table.fixed-header th:first-child,
+.appointments-table.scrollable-body td:first-child {
+  width: 35%;
+}
+
+.appointments-table.fixed-header th:nth-child(2),
+.appointments-table.scrollable-body td:nth-child(2) {
+  width: 20%;
+}
+
+.appointments-table.fixed-header th:nth-child(3),
+.appointments-table.scrollable-body td:nth-child(3) {
+  width: 25%;
+}
+
+.appointments-table.fixed-header th:nth-child(4),
+.appointments-table.scrollable-body td:nth-child(4) {
+  width: 20%;
+}
+
+/* Scrollable activity container */
+.activity-container.scrollable {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  min-height: 0;
+}
+
+/* Custom scrollbar styling */
+.activity-container.scrollable::-webkit-scrollbar,
+.table-container.scrollable::-webkit-scrollbar {
+  width: 6px;
+}
+
+.activity-container.scrollable::-webkit-scrollbar-track,
+.table-container.scrollable::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-radius: 3px;
+}
+
+.activity-container.scrollable::-webkit-scrollbar-thumb,
+.table-container.scrollable::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 3px;
+}
+
+.activity-container.scrollable::-webkit-scrollbar-thumb:hover,
+.table-container.scrollable::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* For Firefox */
+.activity-container.scrollable,
+.table-container.scrollable {
+  scrollbar-width: thin;
+  scrollbar-color: #cbd5e1 #f1f5f9;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .appointments-table.fixed-header th,
+  .appointments-table.scrollable-body td {
+    padding: 0.75rem;
+    font-size: 0.85rem;
+  }
+
+  .patient-info {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.25rem;
+  }
+}
+
 .activity-container {
   display: flex;
   flex-direction: column;

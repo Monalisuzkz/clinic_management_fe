@@ -61,6 +61,24 @@ const recentActivity = [
     time: "1 hour ago",
   },
   { id: 4, text: "Billing completed", type: "warning", time: "2 hours ago" },
+  {
+    id: 5,
+    text: "Prescription created",
+    type: "highlight",
+    time: "1 hour ago",
+  },
+  {
+    id: 6,
+    text: "Lab results ready",
+    type: "info",
+    time: "3 hours ago",
+  },
+  {
+    id: 7,
+    text: "Patient follow-up scheduled",
+    type: "success",
+    time: "4 hours ago",
+  },
 ];
 
 const appointments = [
@@ -93,6 +111,22 @@ const appointments = [
     patient: "Sarah Williams",
     time: "03:30 PM",
     doctor: "Dr. Brown",
+    status: "Pending",
+    avatar: "👩",
+  },
+  {
+    id: 5,
+    patient: "Robert Chen",
+    time: "04:00 PM",
+    doctor: "Dr. Smith",
+    status: "Confirmed",
+    avatar: "👨",
+  },
+  {
+    id: 6,
+    patient: "Emily Davis",
+    time: "05:00 PM",
+    doctor: "Dr. Lee",
     status: "Pending",
     avatar: "👩",
   },
@@ -148,7 +182,7 @@ const Dashboard: React.FC = () => {
               <Activity size={20} /> Recent Activity
             </h2>
           </div>
-          <div className="activity-container">
+          <div className="activity-container scrollable">
             {recentActivity.map((activity) => (
               <div
                 key={activity.id}
@@ -186,6 +220,17 @@ const Dashboard: React.FC = () => {
               <span className="status-label">Today's Revenue</span>
               <span className="status-value">$4,250</span>
             </div>
+            {/* New Status Items */}
+            <div className="status-item">
+              <span className="status-label">Occupancy Rate</span>
+              <span className="status-value">78%</span>
+              <span className="status-trend positive">↑ +5%</span>
+            </div>
+            <div className="status-item">
+              <span className="status-label">Patient Satisfaction</span>
+              <span className="status-value">4.8/5.0</span>
+              <span className="status-trend positive">★ Excellent</span>
+            </div>
           </div>
         </div>
       </div>
@@ -198,7 +243,7 @@ const Dashboard: React.FC = () => {
             View All →
           </a>
         </div>
-        <div className="table-container">
+        <div className="table-container scrollable">
           <table className="appointments-table">
             <thead>
               <tr>

@@ -1,6 +1,6 @@
 import * as React from "react";
 import { useNavigate } from "react-router-dom";
-import { Bell, User } from "lucide-react";
+import { Bell, User, LogOut} from "lucide-react";
 import LogoutModal from "../modals/LogoutModal";
 import "./Navbar.css";
 
@@ -95,9 +95,12 @@ const Navbar: React.FC = () => {
                 <User size={16} /> Profile
               </a>
               <hr className="dropdown-divider" />
-              <a onClick={handleLogoutClick} className="dropdown-item logout">
-                Logout
-              </a>
+              <button
+                onClick={handleLogoutClick}
+                className="dropdown-item logout"
+              >
+                <LogOut size={16} /> Logout
+              </button>
             </div>
           )}
           {/* Logout Modal */}
