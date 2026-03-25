@@ -8,6 +8,8 @@
   position: relative;
   height: 85vh;
   overflow: hidden;
+    margin-bottom: 1.5rem;
+  margin-top: -1.5rem;
 }
 
 /* ── Toast ───────────────────────────────────── */

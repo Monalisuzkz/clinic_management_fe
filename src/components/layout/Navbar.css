@@ -7,6 +7,7 @@
   border-bottom: 1px solid #f1f5f9;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
   gap: 2rem;
+  height: 60px;
 }
 
 /* Left Section - Clinic Info */
