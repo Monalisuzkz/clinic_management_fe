@@ -1,20 +1,22 @@
-import React, { useState } from 'react';
-import './Profile.css';
+import React, { useState } from "react";
+import "./Profile.css";
 
 const Profile: React.FC = () => {
-  const [profilePhoto, setProfilePhoto] = useState<string | ArrayBuffer | null>('default-avatar.png');
-  const [name, setName] = useState('Dr. Admin');
-  const [email, setEmail] = useState('admin@example.com');
-  const [contact, setContact] = useState('123-456-7890');
-  const [role, setRole] = useState('Administrator');
-  const [theme, setTheme] = useState('Light');
+  const [profilePhoto, setProfilePhoto] = useState<string | ArrayBuffer | null>(
+    "default-avatar.png",
+  );
+  const [name, setName] = useState("Dr. Admin");
+  const [email, setEmail] = useState("admin@example.com");
+  const [contact, setContact] = useState("123-456-7890");
+  const [role, setRole] = useState("Administrator");
+  const [theme, setTheme] = useState("Light");
 
-  const [currentPassword, setCurrentPassword] = useState('');
-  const [newPassword, setNewPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
 
   const [notifications, setNotifications] = useState(true);
-  const [language, setLanguage] = useState('English');
+  const [language, setLanguage] = useState("English");
 
   const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -28,7 +30,7 @@ const Profile: React.FC = () => {
 
   const handleSave = () => {
     // Save logic here
-    alert('Profile updated!');
+    alert("Profile updated!");
   };
 
   return (
@@ -50,7 +52,10 @@ const Profile: React.FC = () => {
           </div>
           <div>
             <label>Contact:</label>
-            <input value={contact} onChange={(e) => setContact(e.target.value)} />
+            <input
+              value={contact}
+              onChange={(e) => setContact(e.target.value)}
+            />
           </div>
           <div>
             <label>Role:</label>
@@ -108,7 +113,10 @@ const Profile: React.FC = () => {
         </div>
         <div className="preference-item">
           <label>Language:</label>
-          <select value={language} onChange={(e) => setLanguage(e.target.value)}>
+          <select
+            value={language}
+            onChange={(e) => setLanguage(e.target.value)}
+          >
             <option>English</option>
             <option>Spanish</option>
             <option>French</option>
