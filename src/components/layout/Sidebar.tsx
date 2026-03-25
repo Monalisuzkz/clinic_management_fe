@@ -31,7 +31,7 @@ const Sidebar: React.FC = () => {
   return (
     <>
       <aside className="sidebar">
-        <h2>Clinic System</h2>
+        <h2>Clinic Management</h2>
         <ul className="menu-main">
           {menuItems.map((item) => {
             const isActive = location.pathname.startsWith(item.path);
