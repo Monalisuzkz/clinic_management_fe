@@ -80,7 +80,7 @@ const PHARMACIES = [
   "Central Pharmacy",
 ];
 
-// Limit initial prescriptions to 5
+// Fixed initial prescriptions - removed duplicates
 const initialPrescriptions: Prescription[] = [
   {
     id: "RX-001",
@@ -95,108 +95,6 @@ const initialPrescriptions: Prescription[] = [
     dateIssued: "Mar 20, 2026",
     status: "Fulfilled",
     pharmacy: "MedPlus Pharmacy",
-  },
-  {
-    id: "RX-002",
-    patient: "Jane Smith",
-    patientId: "P-002",
-    doctor: "Dr. Lee",
-    medications: [
-      {
-        drug: "Albuterol Inhaler 90mcg",
-        dosage: "90mcg",
-        frequency: "As needed",
-      },
-    ],
-    instructions: "Use inhaler during asthma attacks. Max 4 puffs/day.",
-    dateIssued: "Mar 22, 2026",
-    status: "Sent",
-    pharmacy: "City Care Drugstore",
-  },
-  {
-    id: "RX-002",
-    patient: "Jane Smith",
-    patientId: "P-002",
-    doctor: "Dr. Lee",
-    medications: [
-      {
-        drug: "Albuterol Inhaler 90mcg",
-        dosage: "90mcg",
-        frequency: "As needed",
-      },
-    ],
-    instructions: "Use inhaler during asthma attacks. Max 4 puffs/day.",
-    dateIssued: "Mar 22, 2026",
-    status: "Sent",
-    pharmacy: "City Care Drugstore",
-  },
-  {
-    id: "RX-002",
-    patient: "Jane Smith",
-    patientId: "P-002",
-    doctor: "Dr. Lee",
-    medications: [
-      {
-        drug: "Albuterol Inhaler 90mcg",
-        dosage: "90mcg",
-        frequency: "As needed",
-      },
-    ],
-    instructions: "Use inhaler during asthma attacks. Max 4 puffs/day.",
-    dateIssued: "Mar 22, 2026",
-    status: "Sent",
-    pharmacy: "City Care Drugstore",
-  },
-  {
-    id: "RX-002",
-    patient: "Jane Smith",
-    patientId: "P-002",
-    doctor: "Dr. Lee",
-    medications: [
-      {
-        drug: "Albuterol Inhaler 90mcg",
-        dosage: "90mcg",
-        frequency: "As needed",
-      },
-    ],
-    instructions: "Use inhaler during asthma attacks. Max 4 puffs/day.",
-    dateIssued: "Mar 22, 2026",
-    status: "Sent",
-    pharmacy: "City Care Drugstore",
-  },
-  {
-    id: "RX-002",
-    patient: "Jane Smith",
-    patientId: "P-002",
-    doctor: "Dr. Lee",
-    medications: [
-      {
-        drug: "Albuterol Inhaler 90mcg",
-        dosage: "90mcg",
-        frequency: "As needed",
-      },
-    ],
-    instructions: "Use inhaler during asthma attacks. Max 4 puffs/day.",
-    dateIssued: "Mar 22, 2026",
-    status: "Sent",
-    pharmacy: "City Care Drugstore",
-  },
-  {
-    id: "RX-002",
-    patient: "Jane Smith",
-    patientId: "P-002",
-    doctor: "Dr. Lee",
-    medications: [
-      {
-        drug: "Albuterol Inhaler 90mcg",
-        dosage: "90mcg",
-        frequency: "As needed",
-      },
-    ],
-    instructions: "Use inhaler during asthma attacks. Max 4 puffs/day.",
-    dateIssued: "Mar 22, 2026",
-    status: "Sent",
-    pharmacy: "City Care Drugstore",
   },
   {
     id: "RX-002",
@@ -273,12 +171,14 @@ interface DrugSearchProps {
   value: string;
   onChange: (val: string) => void;
   placeholder?: string;
+  error?: boolean;
 }
 
 const DrugSearch: React.FC<DrugSearchProps> = ({
   value,
   onChange,
   placeholder,
+  error,
 }) => {
   const [open, setOpen] = React.useState(false);
   const [query, setQuery] = React.useState(value);
@@ -306,7 +206,7 @@ const DrugSearch: React.FC<DrugSearchProps> = ({
       <div className="rx-drug-input-wrap">
         <Search size={14} className="rx-drug-search-icon" />
         <input
-          className="rx-drug-input"
+          className={`rx-drug-input ${error ? "error" : ""}`}
           placeholder={placeholder ?? "Search drug..."}
           value={query}
           onChange={(e) => {
@@ -343,12 +243,16 @@ interface ViewModalProps {
   rx: Prescription;
   onClose: () => void;
   onUpdateStatus: (id: string, status: RxStatus) => void;
+  onPrint?: (rx: Prescription) => void;
+  onDownload?: (rx: Prescription) => void;
 }
 
 const ViewModal: React.FC<ViewModalProps> = ({
   rx,
   onClose,
   onUpdateStatus,
+  onPrint,
+  onDownload,
 }) => {
   const [pharmacy, setPharmacy] = React.useState(rx.pharmacy ?? PHARMACIES[0]);
 
@@ -469,10 +373,16 @@ const ViewModal: React.FC<ViewModalProps> = ({
           )}
         </div>
         <div className="rx-modal-footer">
-          <button className="rx-modal-btn-sm">
+          <button
+            className="rx-modal-btn-sm"
+            onClick={() => onPrint && onPrint(rx)}
+          >
             <Printer size={14} /> Print
           </button>
-          <button className="rx-modal-btn-sm">
+          <button
+            className="rx-modal-btn-sm"
+            onClick={() => onDownload && onDownload(rx)}
+          >
             <Download size={14} /> Download PDF
           </button>
           <button className="rx-modal-btn-cancel" onClick={onClose}>
@@ -546,11 +456,25 @@ const EPrescribing: React.FC = () => {
     return matchSearch && matchStatus;
   });
 
+  // Enhanced validation with dosage format check
   const validateForm = () => {
     const e: Record<string, string> = {};
     if (!form.patient) e.patient = "Select a patient";
     if (!form.drug) e.drug = "Select a drug";
     if (!form.dosage.trim()) e.dosage = "Enter dosage";
+    // Validate dosage format (should contain numbers and unit like mg, mcg, etc.)
+    if (form.dosage.trim() && !/^[\d.]+(mg|mcg|g|ml|tablet|cap|puff|inhalation|spray|drop)?/i.test(form.dosage.trim())) {
+      e.dosage = "Enter valid dosage (e.g., 500mg, 10ml)";
+    }
+    // Check for duplicate medication in extra meds
+    const allMeds = [
+      form.drug,
+      ...extraMeds.map((m) => m.drug).filter(Boolean),
+    ];
+    const duplicates = allMeds.filter((item, index) => allMeds.indexOf(item) !== index);
+    if (duplicates.length > 0) {
+      e.drug = `Duplicate medication: ${duplicates[0]}`;
+    }
     return e;
   };
 
@@ -573,8 +497,13 @@ const EPrescribing: React.FC = () => {
       doctor: form.doctor,
       medications: allMeds,
       instructions: form.instructions,
-      dateIssued: "Mar 25, 2026",
+      dateIssued: new Date().toLocaleDateString("en-US", {
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+      }),
       status: "Pending",
+      pharmacy: form.pharmacy,
     };
 
     setPrescriptions((prev) => [newRx, ...prev]);
@@ -599,17 +528,62 @@ const EPrescribing: React.FC = () => {
     showToast(status === "Sent" ? "Sent to pharmacy" : "Marked as fulfilled");
   };
 
-  const addExtraMed = () =>
+  const addExtraMed = () => {
+    if (extraMeds.length >= 5) {
+      showToast("Maximum 5 medications per prescription");
+      return;
+    }
     setExtraMeds((prev) => [
       ...prev,
       { drug: "", dosage: "", frequency: FREQUENCIES[0] },
     ]);
+  };
+  
   const removeExtraMed = (i: number) =>
     setExtraMeds((prev) => prev.filter((_, idx) => idx !== i));
+    
   const updateExtraMed = (i: number, field: string, value: string) => {
     setExtraMeds((prev) =>
       prev.map((m, idx) => (idx === i ? { ...m, [field]: value } : m)),
     );
+  };
+
+  const handlePrint = (rx: Prescription) => {
+    // Implement print functionality
+    const printWindow = window.open("", "_blank");
+    if (printWindow) {
+      printWindow.document.write(`
+        <html>
+          <head><title>Prescription ${rx.id}</title></head>
+          <body>
+            <h1>Prescription</h1>
+            <p>Patient: ${rx.patient}</p>
+            <p>Doctor: ${rx.doctor}</p>
+            <p>Date: ${rx.dateIssued}</p>
+            <h2>Medications:</h2>
+            <ul>
+              ${rx.medications.map(m => `<li>${m.drug} - ${m.dosage} - ${m.frequency}</li>`).join("")}
+            </ul>
+            <p>Instructions: ${rx.instructions}</p>
+          </body>
+        </html>
+      `);
+      printWindow.document.close();
+      printWindow.print();
+    }
+  };
+
+  const handleDownload = (rx: Prescription) => {
+    // Implement download functionality
+    const content = JSON.stringify(rx, null, 2);
+    const blob = new Blob([content], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `prescription_${rx.id}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+    showToast("Prescription downloaded");
   };
 
   return (
@@ -801,6 +775,7 @@ const EPrescribing: React.FC = () => {
                   value={form.drug}
                   onChange={(val) => setField("drug", val)}
                   placeholder="Search drug name..."
+                  error={!!formErrors.drug}
                 />
                 {formErrors.drug && (
                   <span className="rx-field-error">{formErrors.drug}</span>
@@ -959,6 +934,8 @@ const EPrescribing: React.FC = () => {
           rx={prescriptions.find((r) => r.id === viewRx.id) ?? viewRx}
           onClose={() => setViewRx(null)}
           onUpdateStatus={handleUpdateStatus}
+          onPrint={handlePrint}
+          onDownload={handleDownload}
         />
       )}
     </div>

@@ -132,12 +132,38 @@ const getMonthDays = (date: Date) => {
   return days;
 };
 
+// Helper function to check if a date is in the past
+const isPastDate = (date: Date) => {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  return date < today;
+};
+
+// Helper to check for time slot conflicts
+const hasTimeConflict = (
+  appointments: Appointment[],
+  date: Date,
+  time: string,
+  doctor: string,
+  excludeId?: number,
+) => {
+  return appointments.some(
+    (a) =>
+      a.id !== excludeId &&
+      a.date.toDateString() === date.toDateString() &&
+      a.time === time &&
+      a.doctor === doctor &&
+      a.status !== "Cancelled",
+  );
+};
+
 // ── Book Modal ───────────────────────────────────────────
 interface BookModalProps {
   onClose: () => void;
   onSave: (appt: Appointment) => void;
   editData?: Appointment | null;
   rescheduleMode?: boolean;
+  existingAppointments: Appointment[];
 }
 
 const formatDate = (date?: Date) => {
@@ -150,6 +176,7 @@ const BookModal: React.FC<BookModalProps> = ({
   onSave,
   editData,
   rescheduleMode,
+  existingAppointments,
 }) => {
   const [form, setForm] = React.useState({
     patient: editData?.patient ?? "",
@@ -166,6 +193,26 @@ const BookModal: React.FC<BookModalProps> = ({
     const e: Record<string, string> = {};
     if (!form.patient.trim()) e.patient = "Patient name is required";
     if (!form.date.trim()) e.date = "Date is required";
+
+    const selectedDate = new Date(form.date);
+    if (form.date && isPastDate(selectedDate)) {
+      e.date = "Cannot schedule appointments in the past";
+    }
+
+    if (form.date && form.time && form.doctor) {
+      const selectedDateObj = new Date(form.date);
+      const conflict = hasTimeConflict(
+        existingAppointments,
+        selectedDateObj,
+        form.time,
+        form.doctor,
+        editData?.id,
+      );
+      if (conflict) {
+        e.time = `Dr. ${form.doctor} already has an appointment at ${form.time} on this date`;
+      }
+    }
+
     return e;
   };
 
@@ -175,12 +222,21 @@ const BookModal: React.FC<BookModalProps> = ({
       setErrors(e);
       return;
     }
+
+    const selectedDate = new Date(form.date);
     onSave({
       id: editData?.id ?? Date.now(),
-      avatar: editData?.avatar ?? "👤",
-      ...form,
-      date: new Date(form.date),
+      avatar:
+        editData?.avatar ??
+        (form.patient.includes("Mrs") || form.patient.includes("Ms")
+          ? "👩"
+          : "👨"),
+      patient: form.patient,
+      doctor: form.doctor,
+      date: selectedDate,
+      time: form.time,
       status: form.status as Status,
+      notes: form.notes || undefined,
     });
   };
 
@@ -196,7 +252,6 @@ const BookModal: React.FC<BookModalProps> = ({
   return (
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal-box" onClick={(e) => e.stopPropagation()}>
-        {/* Modal Header */}
         <div className="modal-header">
           <div>
             <h2 className="modal-title">
@@ -219,9 +274,7 @@ const BookModal: React.FC<BookModalProps> = ({
           </button>
         </div>
 
-        {/* Modal Body */}
         <div className="modal-body">
-          {/* Patient Name */}
           <div className="modal-field">
             <label className="modal-label">
               Patient Name <span className="modal-required">*</span>
@@ -237,7 +290,6 @@ const BookModal: React.FC<BookModalProps> = ({
             )}
           </div>
 
-          {/* Doctor */}
           <div className="modal-field">
             <label className="modal-label">Assign Doctor</label>
             <div className="modal-select-wrap">
@@ -254,20 +306,17 @@ const BookModal: React.FC<BookModalProps> = ({
             </div>
           </div>
 
-          {/* Date & Time */}
           <div className="modal-row">
             <div className="modal-field">
               <label className="modal-label">
                 Date <span className="modal-required">*</span>
               </label>
-
               <input
                 type="date"
                 className={`modal-input ${errors.date ? "error" : ""}`}
                 value={form.date}
                 onChange={(e) => set("date", e.target.value)}
               />
-
               {errors.date && (
                 <span className="modal-error">{errors.date}</span>
               )}
@@ -286,10 +335,12 @@ const BookModal: React.FC<BookModalProps> = ({
                 </select>
                 <ChevronDown size={14} className="modal-select-icon" />
               </div>
+              {errors.time && (
+                <span className="modal-error">{errors.time}</span>
+              )}
             </div>
           </div>
 
-          {/* Status */}
           <div className="modal-field">
             <label className="modal-label">Status</label>
             <div className="modal-status-group">
@@ -305,7 +356,6 @@ const BookModal: React.FC<BookModalProps> = ({
             </div>
           </div>
 
-          {/* Notes */}
           <div className="modal-field">
             <label className="modal-label">
               Notes <span className="modal-optional">(optional)</span>
@@ -320,7 +370,6 @@ const BookModal: React.FC<BookModalProps> = ({
           </div>
         </div>
 
-        {/* Modal Footer */}
         <div className="modal-footer">
           <button className="modal-btn-cancel" onClick={onClose}>
             Cancel
@@ -382,9 +431,14 @@ const ConfirmModal: React.FC<ConfirmModalProps> = ({
 // ── Main Component ───────────────────────────────────────
 const Appointments: React.FC = () => {
   const [currentDate, setCurrentDate] = React.useState(new Date());
+  const [selectedDate, setSelectedDate] = React.useState<Date | null>(
+    new Date(),
+  );
   const [appointments, setAppointments] =
     React.useState<Appointment[]>(initialAppointments);
-  const [selected, setSelected] = React.useState<Appointment>(appointments[0]);
+  const [selected, setSelected] = React.useState<Appointment | null>(
+    appointments[0] || null,
+  );
   const [calendarView, setCalendarView] = React.useState<
     "Day" | "Week" | "Month"
   >("Week");
@@ -405,7 +459,6 @@ const Appointments: React.FC = () => {
   const dateRef = React.useRef<HTMLDivElement>(null);
   const doctorRef = React.useRef<HTMLDivElement>(null);
 
-  // Close dropdowns on outside click
   React.useEffect(() => {
     const handler = (e: MouseEvent) => {
       if (dateRef.current && !dateRef.current.contains(e.target as Node))
@@ -430,9 +483,11 @@ const Appointments: React.FC = () => {
 
   const isThisWeek = (date: Date) => {
     const now = new Date();
-    const first = new Date(now.setDate(now.getDate() - now.getDay()));
-    const last = new Date(now.setDate(first.getDate() + 6));
-    return date >= first && date <= last;
+    const startOfWeek = new Date(now);
+    startOfWeek.setDate(now.getDate() - now.getDay());
+    const endOfWeek = new Date(startOfWeek);
+    endOfWeek.setDate(startOfWeek.getDate() + 6);
+    return date >= startOfWeek && date <= endOfWeek;
   };
 
   const isThisMonth = (date: Date) => {
@@ -445,18 +500,54 @@ const Appointments: React.FC = () => {
 
   const handlePrevMonth = () => {
     setCurrentDate((prevDate) => {
-      const newDate = new Date(prevDate); // clone the date
-      newDate.setMonth(newDate.getMonth() - 1); // go to previous month
+      const newDate = new Date(prevDate);
+      newDate.setMonth(newDate.getMonth() - 1);
       return newDate;
     });
   };
 
   const handleNextMonth = () => {
     setCurrentDate((prevDate) => {
-      const newDate = new Date(prevDate); // clone the date
-      newDate.setMonth(newDate.getMonth() + 1); // go to next month
+      const newDate = new Date(prevDate);
+      newDate.setMonth(newDate.getMonth() + 1);
       return newDate;
     });
+  };
+
+  const handleDateClick = (day: number) => {
+    const newDate = new Date(
+      currentDate.getFullYear(),
+      currentDate.getMonth(),
+      day,
+    );
+    setSelectedDate(newDate);
+    setCalendarView("Day");
+  };
+
+  const getFilteredSlots = () => {
+    let filteredAppointments = appointments;
+
+    if (calendarView === "Day" && selectedDate) {
+      filteredAppointments = filteredAppointments.filter((a) =>
+        isSameDay(a.date, selectedDate),
+      );
+    } else if (calendarView === "Week" && selectedDate) {
+      const startOfWeek = new Date(selectedDate);
+      startOfWeek.setDate(selectedDate.getDate() - selectedDate.getDay());
+      const endOfWeek = new Date(startOfWeek);
+      endOfWeek.setDate(startOfWeek.getDate() + 6);
+      filteredAppointments = filteredAppointments.filter(
+        (a) => a.date >= startOfWeek && a.date <= endOfWeek,
+      );
+    } else if (calendarView === "Month") {
+      filteredAppointments = filteredAppointments.filter(
+        (a) =>
+          a.date.getMonth() === currentDate.getMonth() &&
+          a.date.getFullYear() === currentDate.getFullYear(),
+      );
+    }
+
+    return filteredAppointments.sort((a, b) => a.time.localeCompare(b.time));
   };
 
   const filtered = appointments.filter((a) => {
@@ -468,13 +559,10 @@ const Appointments: React.FC = () => {
     const matchDoctor = doctorFilter === "All" || a.doctor === doctorFilter;
 
     const matchDate = (() => {
-      const today = new Date();
-
       if (dateFilter === "All") return true;
-      if (dateFilter === "Today") return isSameDay(a.date, today);
+      if (dateFilter === "Today") return isSameDay(a.date, new Date());
       if (dateFilter === "This Week") return isThisWeek(a.date);
       if (dateFilter === "This Month") return isThisMonth(a.date);
-
       return true;
     })();
 
@@ -491,8 +579,10 @@ const Appointments: React.FC = () => {
           : "Appointment updated successfully",
       );
     } else {
-      setAppointments((prev) => [...prev, appt]);
-      setSelected(appt);
+      const newId = Math.max(...appointments.map((a) => a.id), 0) + 1;
+      const newAppt = { ...appt, id: newId };
+      setAppointments((prev) => [...prev, newAppt]);
+      setSelected(newAppt);
       showToast("Appointment booked successfully");
     }
     setShowBookModal(false);
@@ -518,21 +608,19 @@ const Appointments: React.FC = () => {
   };
 
   const handleReschedule = (appt: Appointment) => {
-    setEditData({ ...appt, date: new Date(), time: TIMES[0] });
+    setEditData(appt);
     setRescheduleMode(true);
     setShowBookModal(true);
   };
 
   return (
     <div className="appt-container">
-      {/* Toast */}
       {toast && (
         <div className="appt-toast">
           <Check size={15} /> {toast}
         </div>
       )}
 
-      {/* Header */}
       <div className="appointment-header">
         <h1 className="appointment-title">Appointments</h1>
         <p className="appointment-subtitle">
@@ -540,7 +628,6 @@ const Appointments: React.FC = () => {
         </p>
       </div>
 
-      {/* Toolbar */}
       <div className="appt-toolbar">
         <div />
         <button
@@ -555,26 +642,19 @@ const Appointments: React.FC = () => {
         </button>
       </div>
 
-      {/* Split View */}
       <div className="appt-split">
-        {/* Calendar Panel */}
         <div className="appt-calendar-panel">
           <div className="appt-calendar-top">
             <div className="appt-cal-nav">
-              {/* Previous Month Button */}
               <button className="appt-cal-nav-btn" onClick={handlePrevMonth}>
                 &lt;
               </button>
-
-              {/* Current Month and Year */}
               <span className="appt-calendar-month">
                 {currentDate.toLocaleDateString("en-US", {
                   month: "long",
                   year: "numeric",
                 })}
               </span>
-
-              {/* Next Month Button */}
               <button className="appt-cal-nav-btn" onClick={handleNextMonth}>
                 &gt;
               </button>
@@ -609,10 +689,17 @@ const Appointments: React.FC = () => {
                 currentDate.getMonth() === new Date().getMonth() &&
                 currentDate.getFullYear() === new Date().getFullYear();
 
+              const isSelected =
+                selectedDate &&
+                selectedDate.getDate() === date &&
+                selectedDate.getMonth() === currentDate.getMonth() &&
+                selectedDate.getFullYear() === currentDate.getFullYear();
+
               return (
                 <div
                   key={i}
-                  className={`appt-cal-date ${isToday ? "today" : ""}`}
+                  className={`appt-cal-date ${isToday ? "today" : ""} ${isSelected ? "selected" : ""}`}
+                  onClick={() => handleDateClick(date)}
                 >
                   {date}
                   {hasAppt && <span className="appt-cal-dot" />}
@@ -621,40 +708,21 @@ const Appointments: React.FC = () => {
             })}
           </div>
 
-          {/* Today's slots */}
           <div className="appt-time-slots">
-            <p className="appt-slots-label">Schedule</p>
-            {appointments
-              .filter((a) => {
-                const appointmentDate = new Date(a.date);
-                const current = new Date();
+            <p className="appt-slots-label">
+              {calendarView === "Day" && selectedDate
+                ? selectedDate.toDateString()
+                : calendarView === "Week"
+                  ? "This Week"
+                  : currentDate.toLocaleString("default", {
+                      month: "long",
+                      year: "numeric",
+                    })}
+            </p>
 
-                if (calendarView === "Day") {
-                  return isSameDay(appointmentDate, current);
-                }
-
-                if (calendarView === "Week") {
-                  const startOfWeek = new Date(current);
-                  startOfWeek.setDate(current.getDate() - current.getDay());
-                  const endOfWeek = new Date(startOfWeek);
-                  endOfWeek.setDate(startOfWeek.getDate() + 6);
-                  return (
-                    appointmentDate >= startOfWeek &&
-                    appointmentDate <= endOfWeek
-                  );
-                }
-
-                if (calendarView === "Month") {
-                  return (
-                    appointmentDate.getMonth() === current.getMonth() &&
-                    appointmentDate.getFullYear() === current.getFullYear()
-                  );
-                }
-
-                // Default fallback, show all
-                return true;
-              })
-              .map((a) => (
+            {/* Only this div scrolls */}
+            <div className="appt-slots-scroll">
+              {getFilteredSlots().map((a) => (
                 <div
                   key={a.id}
                   className={`appt-slot ${selected?.id === a.id ? "selected" : ""}`}
@@ -667,10 +735,15 @@ const Appointments: React.FC = () => {
                   </span>
                 </div>
               ))}
+              {getFilteredSlots().length === 0 && (
+                <div className="appt-detail-empty">
+                  No appointments scheduled
+                </div>
+              )}
+            </div>
           </div>
         </div>
 
-        {/* Detail Panel */}
         <div className="appt-detail-panel">
           {selected ? (
             <>
@@ -719,12 +792,14 @@ const Appointments: React.FC = () => {
                 >
                   <RefreshCw size={14} /> Reschedule
                 </button>
-                <button
-                  className="appt-action-btn cancel"
-                  onClick={() => setConfirmCancel(selected)}
-                >
-                  <X size={14} /> Cancel
-                </button>
+                {selected.status !== "Cancelled" && (
+                  <button
+                    className="appt-action-btn cancel"
+                    onClick={() => setConfirmCancel(selected)}
+                  >
+                    <X size={14} /> Cancel
+                  </button>
+                )}
               </div>
             </>
           ) : (
@@ -735,12 +810,10 @@ const Appointments: React.FC = () => {
         </div>
       </div>
 
-      {/* Table */}
       <div className="appt-table-card">
         <div className="appt-table-header">
           <h2 className="appt-table-title">All Appointments</h2>
           <div className="appt-table-filters">
-            {/* Search */}
             <div className="appt-search">
               <Search size={16} className="appt-search-icon" />
               <input
@@ -752,7 +825,6 @@ const Appointments: React.FC = () => {
               />
             </div>
 
-            {/* Date Filter */}
             <div className="appt-filter-wrap" ref={dateRef}>
               <div
                 className={`appt-filter ${dateFilter !== "All" ? "active" : ""}`}
@@ -786,7 +858,6 @@ const Appointments: React.FC = () => {
               )}
             </div>
 
-            {/* Doctor Filter */}
             <div className="appt-filter-wrap" ref={doctorRef}>
               <div
                 className={`appt-filter ${doctorFilter !== "All" ? "active" : ""}`}
@@ -820,7 +891,6 @@ const Appointments: React.FC = () => {
               )}
             </div>
 
-            {/* Status Tabs */}
             <div className="appt-filter-tabs">
               {["All", "Confirmed", "Pending", "Cancelled"].map((s) => (
                 <button
@@ -900,13 +970,15 @@ const Appointments: React.FC = () => {
                         >
                           <RefreshCw size={14} />
                         </button>
-                        <button
-                          className="appt-icon-btn danger"
-                          title="Cancel"
-                          onClick={() => setConfirmCancel(apt)}
-                        >
-                          <X size={14} />
-                        </button>
+                        {apt.status !== "Cancelled" && (
+                          <button
+                            className="appt-icon-btn danger"
+                            title="Cancel"
+                            onClick={() => setConfirmCancel(apt)}
+                          >
+                            <X size={14} />
+                          </button>
+                        )}
                       </div>
                     </td>
                   </tr>
@@ -917,7 +989,6 @@ const Appointments: React.FC = () => {
         </div>
       </div>
 
-      {/* Modals */}
       {showBookModal && (
         <BookModal
           onClose={() => {
@@ -928,6 +999,7 @@ const Appointments: React.FC = () => {
           onSave={handleSave}
           editData={editData}
           rescheduleMode={rescheduleMode}
+          existingAppointments={appointments}
         />
       )}
       {confirmCancel && (

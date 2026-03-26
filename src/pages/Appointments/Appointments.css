@@ -4,7 +4,9 @@
   flex-direction: column;
   gap: 1.25rem;
   position: relative;
-  height: 170vh;
+  min-height: 150vh;
+  height: 154vh;
+  overflow: visible;
 }
 
 /* ── Toast ───────────────────────────────────── */
@@ -136,6 +138,7 @@
 
 .appt-filter-wrap {
   position: relative;
+  z-index: 100;
 }
 
 .appt-dropdown {
@@ -146,10 +149,15 @@
   border: 1px solid #e2e8f0;
   border-radius: 0.625rem;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
-  z-index: 200;
+  z-index: 1000;
   min-width: 160px;
   overflow: hidden;
   animation: dropdownOpen 0.15s ease;
+}
+
+.appt-dropdown--right {
+  left: auto;
+  right: 0;
 }
 
 @keyframes dropdownOpen {
@@ -251,6 +259,8 @@
   padding: 1.25rem;
   display: flex;
   flex-direction: column;
+  height: 550px;
+  overflow: hidden;
   gap: 1rem;
 }
 
@@ -355,6 +365,11 @@
   color: white;
   font-weight: 700;
 }
+.appt-cal-date.selected {
+  background: #dbeafe;
+  color: #1d4ed8;
+  font-weight: 600;
+}
 .appt-cal-date.other-month {
   color: #cbd5e1;
 }
@@ -378,6 +393,17 @@
   gap: 0.5rem;
   border-top: 1px solid #f1f5f9;
   padding-top: 1rem;
+  min-height: 0;
+  flex: 1;
+}
+
+.appt-slots-scroll {
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  flex: 1;
+  min-height: 0;
 }
 
 .appt-slots-label {
@@ -436,6 +462,7 @@
   flex-direction: column;
   align-items: center;
   gap: 0.875rem;
+  height: 550px;
 }
 
 .appt-detail-top {
@@ -510,6 +537,7 @@
   font-size: 0.8rem;
   color: #92400e;
   font-style: italic;
+  margin-top: 0.5rem;
 }
 
 .appt-detail-actions {
@@ -587,13 +615,18 @@
   color: #b91c1c;
 }
 
-/* ── Table ───────────────────────────────────── */
+/* ── Table Card ───────────────────────────────── */
 .appt-table-card {
   background: white;
   border-radius: 0.875rem;
   border: 1px solid #f1f5f9;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
   overflow: hidden;
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  max-height: 620px;
 }
 
 .appt-table-header {
@@ -602,6 +635,10 @@
   gap: 1rem;
   padding: 1.25rem 1.5rem;
   border-bottom: 1px solid #f1f5f9;
+  position: relative;
+  z-index: 5;
+  flex-shrink: 0;
+  background: white;
 }
 
 .appt-table-filters {
@@ -609,6 +646,8 @@
   align-items: center;
   gap: 0.625rem;
   flex-wrap: wrap;
+  position: relative;
+  z-index: 10;
 }
 
 .appt-table-title {
@@ -625,18 +664,56 @@
   margin-left: auto;
 }
 
-.appt-dropdown--right {
-  left: auto;
-  right: 0;
-}
-
+/* Scrollable table wrapper */
 .appt-table-wrapper {
   overflow-x: auto;
+  overflow-y: auto;
+  flex: 1;
+  min-height: 0;
+  position: relative;
+  z-index: 1;
+  max-height: 400px;
 }
 
+/* Custom scrollbar styling */
+.appt-table-wrapper::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.appt-table-wrapper::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-radius: 4px;
+}
+
+.appt-table-wrapper::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+
+.appt-table-wrapper::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* For Firefox */
+.appt-table-wrapper {
+  scrollbar-width: thin;
+  scrollbar-color: #cbd5e1 #f1f5f9;
+}
+
+/* Table styles */
 .appt-table {
   width: 100%;
   border-collapse: collapse;
+  position: relative;
+}
+
+/* Sticky header for the table */
+.appt-table thead {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  background: #f8fafc;
 }
 
 .appt-table thead tr {
@@ -652,6 +729,9 @@
   color: #64748b;
   text-transform: uppercase;
   letter-spacing: 0.5px;
+  background: #f8fafc;
+  position: sticky;
+  top: 0;
 }
 
 .appt-table-row {
@@ -766,7 +846,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 1000;
+  z-index: 10000;
   animation: fadeIn 0.2s ease;
 }
 
