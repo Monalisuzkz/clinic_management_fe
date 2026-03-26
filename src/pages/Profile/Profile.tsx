@@ -243,8 +243,6 @@ const Profile: React.FC = () => {
             <label>Language:</label>
             <select value={language} onChange={(e) => setLanguage(e.target.value)}>
               <option>English</option>
-              <option>Spanish</option>
-              <option>French</option>
               <option>Tagalog</option>
             </select>
           </div>
