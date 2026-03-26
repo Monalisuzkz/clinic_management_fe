@@ -282,7 +282,9 @@ const downloadInventoryPDF = async (items: InventoryItem[]) => {
           </tr>
         </thead>
         <tbody>
-          ${items.map((i) => `
+          ${items
+            .map(
+              (i) => `
             <tr>
               <td style="padding:10px 12px;border-bottom:1px solid #f1f5f9;">${i.id}</td>
               <td style="padding:10px 12px;border-bottom:1px solid #f1f5f9;">${i.name}</td>
@@ -300,7 +302,9 @@ const downloadInventoryPDF = async (items: InventoryItem[]) => {
                 ">${i.status}</span>
               </td>
             </tr>
-          `).join("")}
+          `,
+            )
+            .join("")}
         </tbody>
       </table>
       <div style="margin-top:32px;font-size:11px;color:#94a3b8;border-top:1px solid #e2e8f0;padding-top:12px;">
@@ -328,7 +332,11 @@ const downloadInventoryPDF = async (items: InventoryItem[]) => {
     });
 
     const imgData = canvas.toDataURL("image/png");
-    const pdf = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
+    const pdf = new jsPDF({
+      orientation: "portrait",
+      unit: "mm",
+      format: "a4",
+    });
 
     const imgWidth = 190;
     const pageHeight = 277;
@@ -848,21 +856,31 @@ const Inventory: React.FC = () => {
       item.supplier.toLowerCase().includes(search.toLowerCase()) ||
       item.id.toLowerCase().includes(search.toLowerCase());
     const matchStatus = statusFilter === "All" || item.status === statusFilter;
-    const matchExpiry =
-      expiryFilter === "All" ||
-      (expiryFilter === "Expired" && item.status === "Expired") ||
-      (expiryFilter === "Expiring Soon" &&
-        item.expiryDate !== "N/A" &&
-        item.status !== "Expired" &&
-        (() => {
+
+    // Fix the expiry filter logic
+    let matchExpiry = true;
+    if (expiryFilter === "Expired") {
+      matchExpiry = item.status === "Expired";
+    } else if (expiryFilter === "Expiring Soon") {
+      if (item.expiryDate !== "N/A" && item.status !== "Expired") {
+        try {
           const exp = parseExpiry(item.expiryDate);
-          if (!exp) return false;
+          if (exp) {
+            const next90Days = new Date();
+            next90Days.setDate(next90Days.getDate() + 90);
+            matchExpiry = exp < next90Days;
+          } else {
+            matchExpiry = false;
+          }
+        } catch (error) {
+          console.error("Error in expiry filter:", error);
+          matchExpiry = false;
+        }
+      } else {
+        matchExpiry = false;
+      }
+    }
 
-          const next90Days = new Date();
-          next90Days.setDate(next90Days.getDate() + 90);
-
-          return exp < next90Days;
-        })());
     return matchSearch && matchStatus && matchExpiry;
   });
 
@@ -878,15 +896,38 @@ const Inventory: React.FC = () => {
     setEditItem(null);
   };
 
-  const parseExpiry = (dateStr: string) => {
-    if (dateStr === "N/A") return null;
+  const parseExpiry = (dateStr: string): Date | null => {
+    if (!dateStr || dateStr === "N/A") return null;
 
-    const parsed = new Date(dateStr);
-    if (!isNaN(parsed.getTime())) return parsed;
+    try {
+      // Try ISO format (YYYY-MM-DD)
+      const isoDate = new Date(dateStr);
+      if (!isNaN(isoDate.getTime())) {
+        return isoDate;
+      }
 
-    // fallback for formats like "Dec 2026"
-    const [month, year] = dateStr.split(" ");
-    return new Date(`${month} 1, ${year}`);
+      // Try month year format (e.g., "Dec 2026")
+      const parts = dateStr.split(" ");
+      if (parts.length === 2) {
+        const [month, year] = parts;
+        const parsed = new Date(`${month} 1, ${year}`);
+        if (!isNaN(parsed.getTime())) {
+          return parsed;
+        }
+      }
+
+      // Try parsing as a regular date string
+      const fallbackDate = new Date(dateStr);
+      if (!isNaN(fallbackDate.getTime())) {
+        return fallbackDate;
+      }
+
+      console.warn(`Unable to parse date: ${dateStr}`);
+      return null;
+    } catch (error) {
+      console.error(`Error parsing date "${dateStr}":`, error);
+      return null;
+    }
   };
 
   const handleAdjust = (id: string, delta: number, note: string) => {
@@ -1405,12 +1446,8 @@ const Inventory: React.FC = () => {
                         .toLowerCase()
                         .includes(logSearch.toLowerCase()) ||
                       l.id.toLowerCase().includes(logSearch.toLowerCase()) ||
-                      l.note
-                        .toLowerCase()
-                        .includes(logSearch.toLowerCase()) ||
-                      l.action
-                        .toLowerCase()
-                        .includes(logSearch.toLowerCase()),
+                      l.note.toLowerCase().includes(logSearch.toLowerCase()) ||
+                      l.action.toLowerCase().includes(logSearch.toLowerCase()),
                   )
                   .map((log) => (
                     <tr key={log.id} className="inv-table-row">
