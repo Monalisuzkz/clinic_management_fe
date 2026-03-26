@@ -3,11 +3,9 @@
   flex-direction: column;
   gap: 1.25rem;
   position: relative;
-  padding: 1.5rem; /* Add padding to the container */
   max-width: 1600px; /* Optional: limit max width for very large screens */
   margin: 0 auto; /* Optional: center the content */
-  width: 100%;
-  box-sizing: border-box;
+  box-sizing: border-box; 
 }
 
 .inv-toast {
@@ -40,7 +38,7 @@
 }
 
 .inv-header {
-  margin-top: 0 !important;
+  margin-top: -1.5rem !important;
   padding: 0;
 }
 
