@@ -239,9 +239,6 @@ const Dashboard: React.FC = () => {
       <div className="card appointments-card">
         <div className="card-header">
           <h2 className="card-title">Today's Appointments</h2>
-          <a href="#" className="view-all-link">
-            View All →
-          </a>
         </div>
         <div className="table-container scrollable">
           <table className="appointments-table">

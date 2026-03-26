@@ -260,14 +260,14 @@ declare global {
 // ── PDF Download Helper (CDN + safe typing) ────
 const downloadInventoryPDF = async (items: InventoryItem[]) => {
   const { jsPDF } = await import("jspdf");
+  const html2canvas = (await import("html2canvas")).default;
 
   const htmlContent = `
-    <div style="font-family: Arial, sans-serif; padding: 32px; color:#0f172a;">
+    <div style="font-family: Arial, sans-serif; padding: 32px; color:#0f172a; background: white;">
       <h1 style="font-size:22px;margin-bottom:4px;">Inventory Report</h1>
       <p style="color:#64748b;font-size:13px;margin-bottom:24px;">
         Generated ${new Date().toLocaleDateString()} · ${items.length} items
       </p>
-
       <table style="width:100%;border-collapse:collapse;margin-top:12px;">
         <thead>
           <tr style="background:#f8fafc;">
@@ -279,37 +279,30 @@ const downloadInventoryPDF = async (items: InventoryItem[]) => {
             <th style="padding:10px 12px;font-size:11px;color:#64748b;text-align:left;border-bottom:2px solid #e2e8f0;text-transform:uppercase;">Expiry</th>
             <th style="padding:10px 12px;font-size:11px;color:#64748b;text-align:left;border-bottom:2px solid #e2e8f0;text-transform:uppercase;">Supplier</th>
             <th style="padding:10px 12px;font-size:11px;color:#64748b;text-align:left;border-bottom:2px solid #e2e8f0;text-transform:uppercase;">Status</th>
-           </tr>
+          </tr>
         </thead>
         <tbody>
-          ${items
-            .map(
-              (i) => `
-             <tr>
+          ${items.map((i) => `
+            <tr>
               <td style="padding:10px 12px;border-bottom:1px solid #f1f5f9;">${i.id}</td>
               <td style="padding:10px 12px;border-bottom:1px solid #f1f5f9;">${i.name}</td>
               <td style="padding:10px 12px;border-bottom:1px solid #f1f5f9;">${i.category}</td>
               <td style="padding:10px 12px;border-bottom:1px solid #f1f5f9;">${i.quantity} ${i.unit}</td>
-              <td style="padding:10px 12px;border-bottom:1px solid #f1f5f9;">&#8369;${i.unitPrice}</td>
+              <td style="padding:10px 12px;border-bottom:1px solid #f1f5f9;">&#8369;${i.unitPrice.toLocaleString()}</td>
               <td style="padding:10px 12px;border-bottom:1px solid #f1f5f9;">${i.expiryDate}</td>
               <td style="padding:10px 12px;border-bottom:1px solid #f1f5f9;">${i.supplier}</td>
               <td style="padding:10px 12px;border-bottom:1px solid #f1f5f9;">
                 <span style="display:inline-block;padding:2px 10px;border-radius:999px;font-size:11px;font-weight:700;
-                  ${i.status === 'In Stock' ? 'background:#d1fae5;color:#047857;' : ''}
-                  ${i.status === 'Low Stock' ? 'background:#fef3c7;color:#b45309;' : ''}
-                  ${i.status === 'Out of Stock' ? 'background:#fee2e2;color:#b91c1c;' : ''}
-                  ${i.status === 'Expired' ? 'background:#fce7f3;color:#9d174d;' : ''}
-                ">
-                  ${i.status}
-                </span>
+                  ${i.status === "In Stock" ? "background:#d1fae5;color:#047857;" : ""}
+                  ${i.status === "Low Stock" ? "background:#fef3c7;color:#b45309;" : ""}
+                  ${i.status === "Out of Stock" ? "background:#fee2e2;color:#b91c1c;" : ""}
+                  ${i.status === "Expired" ? "background:#fce7f3;color:#9d174d;" : ""}
+                ">${i.status}</span>
               </td>
-             </tr>
-          `
-            )
-            .join("")}
+            </tr>
+          `).join("")}
         </tbody>
-       </table>
-
+      </table>
       <div style="margin-top:32px;font-size:11px;color:#94a3b8;border-top:1px solid #e2e8f0;padding-top:12px;">
         Clinic Management System · Inventory Report
       </div>
@@ -318,22 +311,48 @@ const downloadInventoryPDF = async (items: InventoryItem[]) => {
 
   const container = document.createElement("div");
   container.innerHTML = htmlContent;
+  container.style.position = "absolute";
+  container.style.left = "-9999px";
+  container.style.top = "-9999px";
+  container.style.width = "800px";
+  container.style.backgroundColor = "white";
   document.body.appendChild(container);
 
-  const doc = new jsPDF("p", "mm", "a4");
+  try {
+    const canvas = await html2canvas(container, {
+      scale: 2,
+      backgroundColor: "#ffffff",
+      logging: false,
+      useCORS: true,
+      windowWidth: 800,
+    });
 
-  await doc.html(container, {
-    callback: (doc) => {
-      doc.save(`inventory_${new Date().toISOString().slice(0, 10)}.pdf`);
-      document.body.removeChild(container);
-    },
-    x: 10,
-    y: 10,
-    width: 190,
-    windowWidth: 800,
-  });
+    const imgData = canvas.toDataURL("image/png");
+    const pdf = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
+
+    const imgWidth = 190;
+    const pageHeight = 277;
+    const imgHeight = (canvas.height * imgWidth) / canvas.width;
+    let heightLeft = imgHeight;
+    let position = 10;
+
+    pdf.addImage(imgData, "PNG", 10, position, imgWidth, imgHeight);
+    heightLeft -= pageHeight;
+
+    while (heightLeft > 0) {
+      position = heightLeft - imgHeight;
+      pdf.addPage();
+      pdf.addImage(imgData, "PNG", 10, position, imgWidth, imgHeight);
+      heightLeft -= pageHeight;
+    }
+
+    pdf.save(`inventory_${new Date().toISOString().slice(0, 10)}.pdf`);
+  } finally {
+    document.body.removeChild(container);
+  }
 };
 
+// PRINT INVENTORY
 const printInventoryPDF = (items: InventoryItem[]) => {
   const win = window.open("", "_blank");
   if (!win) return;

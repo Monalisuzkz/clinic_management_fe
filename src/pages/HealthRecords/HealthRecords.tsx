@@ -452,7 +452,6 @@ const initialPatients: Patient[] = [
       },
     ],
   },
-  // New Patient 7
   {
     id: "P-007",
     name: "Lisa Martinez",
@@ -1055,11 +1054,23 @@ const HealthRecords: React.FC = () => {
     null,
   );
   const [toast, setToast] = React.useState<string | null>(null);
+  const [showExportDropdown, setShowExportDropdown] = React.useState(false);
+  const exportRef = React.useRef<HTMLDivElement>(null);
 
   const showToast = (msg: string) => {
     setToast(msg);
     setTimeout(() => setToast(null), 3000);
   };
+
+  React.useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (exportRef.current && !exportRef.current.contains(e.target as Node)) {
+        setShowExportDropdown(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   const filtered = patients.filter(
     (p) =>
@@ -1110,7 +1121,177 @@ const HealthRecords: React.FC = () => {
     } else setTab(patient.id, "notes");
   };
 
-  // 📥 FULL EXPORT CSV
+// ── PDF Download Helper (CDN + safe typing) ────
+const downloadHealthRecordPDF = async (patient: Patient) => {
+  const { jsPDF } = await import("jspdf");
+
+  const htmlContent = `
+    <div style="font-family: Arial, sans-serif; padding: 32px; color:#0f172a; max-width: 800px; margin: 0 auto;">
+      <!-- Header -->
+      <div style="text-align: center; margin-bottom: 32px;">
+        <h1 style="font-size: 24px; margin-bottom: 8px; color: #0f172a;">Patient Health Record</h1>
+        <p style="color: #64748b; font-size: 12px;">Generated ${new Date().toLocaleString()}</p>
+      </div>
+
+      <!-- Patient Info Card -->
+      <div style="background: #f8fafc; padding: 20px; border-radius: 12px; margin-bottom: 24px;">
+        <h2 style="font-size: 20px; margin: 0 0 16px 0; color: #0f172a;">${patient.name}</h2>
+        
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+          <div>
+            <p style="margin: 8px 0;"><strong style="color: #475569;">Age / Gender:</strong> ${patient.age} / ${patient.gender}</p>
+            <p style="margin: 8px 0;"><strong style="color: #475569;">Contact:</strong> ${patient.contact}</p>
+            <p style="margin: 8px 0;"><strong style="color: #475569;">Email:</strong> ${patient.email}</p>
+            <p style="margin: 8px 0;"><strong style="color: #475569;">Patient ID:</strong> ${patient.id}</p>
+          </div>
+          <div>
+            <p style="margin: 8px 0;"><strong style="color: #475569;">Blood Type:</strong> ${patient.bloodType}</p>
+            <p style="margin: 8px 0;"><strong style="color: #475569;">Address:</strong> ${patient.address}</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Allergies -->
+      <div style="margin-bottom: 24px;">
+        <h2 style="font-size: 18px; margin: 0 0 12px 0; border-bottom: 2px solid #e2e8f0; padding-bottom: 8px;">Allergies</h2>
+        <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+          ${patient.allergies.map(allergy => `
+            <span style="background: #fee2e2; color: #b91c1c; padding: 4px 12px; border-radius: 20px; font-size: 13px;">${allergy}</span>
+          `).join("")}
+          ${patient.allergies.length === 0 ? '<p style="color: #94a3b8;">No allergies recorded</p>' : ''}
+        </div>
+      </div>
+
+      <!-- Medical Conditions -->
+      <div style="margin-bottom: 24px;">
+        <h2 style="font-size: 18px; margin: 0 0 12px 0; border-bottom: 2px solid #e2e8f0; padding-bottom: 8px;">Medical Conditions</h2>
+        <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+          ${patient.conditions.map(condition => `
+            <span style="background: #fef3c7; color: #b45309; padding: 4px 12px; border-radius: 20px; font-size: 13px;">${condition}</span>
+          `).join("")}
+          ${patient.conditions.length === 0 ? '<p style="color: #94a3b8;">No conditions recorded</p>' : ''}
+        </div>
+      </div>
+
+      <!-- Diagnoses -->
+      ${patient.diagnoses.length > 0 ? `
+      <div style="margin-bottom: 24px;">
+        <h2 style="font-size: 18px; margin: 0 0 12px 0; border-bottom: 2px solid #e2e8f0; padding-bottom: 8px;">Diagnoses</h2>
+        <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+          ${patient.diagnoses.map(diagnosis => `
+            <span style="background: #dbeafe; color: #1e40af; padding: 4px 12px; border-radius: 20px; font-size: 13px;">${diagnosis}</span>
+          `).join("")}
+        </div>
+      </div>
+      ` : ''}
+
+      <!-- Lab Results -->
+      ${patient.labs.length > 0 ? `
+      <div style="margin-bottom: 24px;">
+        <h2 style="font-size: 18px; margin: 0 0 12px 0; border-bottom: 2px solid #e2e8f0; padding-bottom: 8px;">Lab Results</h2>
+        <table style="width:100%; border-collapse: collapse; margin-top: 12px;">
+          <thead>
+            <tr style="background: #f8fafc;">
+              <th style="padding: 10px 12px; text-align: left; border-bottom: 2px solid #e2e8f0; font-size: 12px;">Name</th>
+              <th style="padding: 10px 12px; text-align: left; border-bottom: 2px solid #e2e8f0; font-size: 12px;">Date</th>
+              <th style="padding: 10px 12px; text-align: left; border-bottom: 2px solid #e2e8f0; font-size: 12px;">Result</th>
+              <th style="padding: 10px 12px; text-align: left; border-bottom: 2px solid #e2e8f0; font-size: 12px;">Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${patient.labs.map(lab => `
+              <tr>
+                <td style="padding: 8px 12px; border-bottom: 1px solid #f1f5f9;">${lab.name}</td>
+                <td style="padding: 8px 12px; border-bottom: 1px solid #f1f5f9;">${lab.date}</td>
+                <td style="padding: 8px 12px; border-bottom: 1px solid #f1f5f9;">${lab.result}</td>
+                <td style="padding: 8px 12px; border-bottom: 1px solid #f1f5f9;">
+                  <span style="display:inline-block; padding: 2px 8px; border-radius: 12px; font-size: 11px; background: ${lab.status === 'Normal' ? '#d1fae5' : '#fee2e2'}; color: ${lab.status === 'Normal' ? '#047857' : '#b91c1c'}">
+                    ${lab.status}
+                  </span>
+                </td>
+              </tr>
+            `).join("")}
+          </tbody>
+        </table>
+      </div>
+      ` : ''}
+
+      <!-- Clinical Notes -->
+      ${patient.notes.length > 0 ? `
+      <div style="margin-bottom: 24px;">
+        <h2 style="font-size: 18px; margin: 0 0 12px 0; border-bottom: 2px solid #e2e8f0; padding-bottom: 8px;">Clinical Notes</h2>
+        ${patient.notes.map(note => `
+          <div style="background: #faf9fe; padding: 12px; border-radius: 8px; margin-bottom: 12px;">
+            <p style="margin: 0 0 4px 0;"><strong>${note.date}</strong> - Dr. ${note.doctor}</p>
+            <p style="margin: 0; color: #334155;">${note.note}</p>
+          </div>
+        `).join("")}
+      </div>
+      ` : ''}
+
+      <!-- Medications -->
+      ${patient.medications.length > 0 ? `
+      <div style="margin-bottom: 24px;">
+        <h2 style="font-size: 18px; margin: 0 0 12px 0; border-bottom: 2px solid #e2e8f0; padding-bottom: 8px;">Medications</h2>
+        <table style="width:100%; border-collapse: collapse; margin-top: 12px;">
+          <thead>
+            <tr style="background: #f8fafc;">
+              <th style="padding: 10px 12px; text-align: left; border-bottom: 2px solid #e2e8f0; font-size: 12px;">Name</th>
+              <th style="padding: 10px 12px; text-align: left; border-bottom: 2px solid #e2e8f0; font-size: 12px;">Dosage</th>
+              <th style="padding: 10px 12px; text-align: left; border-bottom: 2px solid #e2e8f0; font-size: 12px;">Frequency</th>
+              <th style="padding: 10px 12px; text-align: left; border-bottom: 2px solid #e2e8f0; font-size: 12px;">Doctor</th>
+              <th style="padding: 10px 12px; text-align: left; border-bottom: 2px solid #e2e8f0; font-size: 12px;">Start Date</th>
+              <th style="padding: 10px 12px; text-align: left; border-bottom: 2px solid #e2e8f0; font-size: 12px;">Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${patient.medications.map(med => `
+              <tr>
+                <td style="padding: 8px 12px; border-bottom: 1px solid #f1f5f9;">${med.name}</td>
+                <td style="padding: 8px 12px; border-bottom: 1px solid #f1f5f9;">${med.dosage}</td>
+                <td style="padding: 8px 12px; border-bottom: 1px solid #f1f5f9;">${med.frequency}</td>
+                <td style="padding: 8px 12px; border-bottom: 1px solid #f1f5f9;">${med.prescribedBy}</td>
+                <td style="padding: 8px 12px; border-bottom: 1px solid #f1f5f9;">${med.startDate}</td>
+                <td style="padding: 8px 12px; border-bottom: 1px solid #f1f5f9;">
+                  <span style="display:inline-block; padding: 2px 8px; border-radius: 12px; font-size: 11px; 
+                    ${med.status === 'Active' ? 'background:#d1fae5;color:#047857;' : ''}
+                    ${med.status === 'Discontinued' ? 'background:#fee2e2;color:#b91c1c;' : ''}">
+                    ${med.status}
+                  </span>
+                </td>
+              </tr>
+            `).join("")}
+          </tbody>
+        </table>
+      </div>
+      ` : ''}
+
+      <!-- Footer -->
+      <div style="margin-top: 32px; font-size: 10px; color: #94a3b8; border-top: 1px solid #e2e8f0; padding-top: 12px; text-align: center;">
+        Clinic Management System · Confidential Medical Record
+      </div>
+    </div>
+  `;
+
+  const container = document.createElement("div");
+  container.innerHTML = htmlContent;
+  document.body.appendChild(container);
+
+  const doc = new jsPDF("p", "mm", "a4");
+
+  await doc.html(container, {
+    callback: (doc) => {
+      doc.save(`${patient.name.replace(/\s+/g, "_")}_HEALTH_RECORD_${new Date().toISOString().slice(0, 10)}.pdf`);
+      document.body.removeChild(container);
+    },
+    x: 10,
+    y: 10,
+    width: 190,
+    windowWidth: 800,
+  });
+};
+
+  // 📥 EXPORT CSV for individual patient
   const handleExportCSV = (patient: Patient) => {
     const rows: string[][] = [];
 
@@ -1182,9 +1363,10 @@ const HealthRecords: React.FC = () => {
     link.click();
 
     URL.revokeObjectURL(url);
+    showToast("CSV exported successfully");
   };
 
-  // 🖨️ FULL PRINT
+  // 🖨️ PRINT for individual patient
   const handlePrint = (patient: Patient) => {
     const content = `
   <html>
@@ -1222,19 +1404,23 @@ const HealthRecords: React.FC = () => {
 
       <h2>Lab Results</h2>
       <table>
-        <tr><th>Name</th><th>Date</th><th>Result</th><th>Status</th></tr>
-        ${patient.labs
-          .map(
-            (l) => `
-          <tr>
-            <td>${l.name}</td>
-            <td>${l.date}</td>
-            <td>${l.result}</td>
-            <td>${l.status}</td>
-          </tr>
-        `,
-          )
-          .join("")}
+        <thead>
+          <tr><th>Name</th><th>Date</th><th>Result</th><th>Status</th></tr>
+        </thead>
+        <tbody>
+          ${patient.labs
+            .map(
+              (l) => `
+            <tr>
+              <td>${l.name}</td>
+              <td>${l.date}</td>
+              <td>${l.result}</td>
+              <td>${l.status}</td>
+            </tr>
+          `,
+            )
+            .join("")}
+        </tbody>
       </table>
 
       <h2>Clinical Notes</h2>
@@ -1249,21 +1435,25 @@ const HealthRecords: React.FC = () => {
 
       <h2>Medications</h2>
       <table>
-        <tr><th>Name</th><th>Dosage</th><th>Frequency</th><th>Doctor</th><th>Start</th><th>Status</th></tr>
-        ${patient.medications
-          .map(
-            (m) => `
-          <tr>
-            <td>${m.name}</td>
-            <td>${m.dosage}</td>
-            <td>${m.frequency}</td>
-            <td>${m.prescribedBy}</td>
-            <td>${m.startDate}</td>
-            <td>${m.status}</td>
-          </tr>
-        `,
-          )
-          .join("")}
+        <thead>
+          <tr><th>Name</th><th>Dosage</th><th>Frequency</th><th>Doctor</th><th>Start</th><th>Status</th></tr>
+        </thead>
+        <tbody>
+          ${patient.medications
+            .map(
+              (m) => `
+            <tr>
+              <td>${m.name}</td>
+              <td>${m.dosage}</td>
+              <td>${m.frequency}</td>
+              <td>${m.prescribedBy}</td>
+              <td>${m.startDate}</td>
+              <td>${m.status}</td>
+            </tr>
+          `,
+            )
+            .join("")}
+        </tbody>
       </table>
 
     </body>
@@ -1276,6 +1466,7 @@ const HealthRecords: React.FC = () => {
       printWindow.document.close();
       printWindow.print();
     }
+    showToast("Print window opened");
   };
 
   const TABS: { key: TabKey; label: string; icon: React.ReactNode }[] = [
@@ -1422,19 +1613,51 @@ const HealthRecords: React.FC = () => {
                         >
                           <Plus size={13} /> New Record
                         </button>
-                        <button
-                          className="hr-btn-sm"
-                          onClick={() => handleExportCSV(patient)}
-                        >
-                          <Download size={13} /> Export
-                        </button>
-
-                        <button
-                          className="hr-btn-sm"
-                          onClick={() => handlePrint(patient)}
-                        >
-                          <Printer size={13} /> Print
-                        </button>
+                        {/* Export Dropdown */}
+                        <div className="inv-filter-wrap" ref={exportRef}>
+                          <button
+                            className="inv-btn-outline"
+                            onClick={() => setShowExportDropdown((p) => !p)}
+                          >
+                            <Download size={14} /> Export{" "}
+                            <ChevronDown
+                              size={13}
+                              className={showExportDropdown ? "rotated" : ""}
+                            />
+                          </button>
+                          {showExportDropdown && (
+                            <div className="inv-dropdown inv-dropdown--right">
+                              <div
+                                className="inv-dropdown-item"
+                                onClick={() => {
+                                  downloadHealthRecordPDF(patient); 
+                                  setShowExportDropdown(false);
+                                }}
+                              >
+                                <Download size={13} /> Download PDF
+                              </div>
+                              <div
+                                className="inv-dropdown-item"
+                                onClick={() => {
+                                  handleExportCSV(patient);
+                                  setShowExportDropdown(false);
+                                }}
+                              >
+                                <Download size={13} /> Download CSV
+                              </div>
+                              <div className="inv-dropdown-divider" />
+                              <div
+                                className="inv-dropdown-item"
+                                onClick={() => {
+                                  handlePrint(patient);
+                                  setShowExportDropdown(false);
+                                }}
+                              >
+                                <Printer size={13} /> Print
+                              </div>
+                            </div>
+                          )}
+                        </div>
                       </div>
                     </div>
                     {getTab(patient.id) === "info" && (
