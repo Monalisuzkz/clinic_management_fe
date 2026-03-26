@@ -107,6 +107,7 @@
 .hr-toolbar-actions {
   display: flex;
   gap: 0.75rem;
+
 }
 .hr-btn-secondary {
   display: flex;
@@ -121,6 +122,8 @@
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s;
+  background: #3b82f6;
+  color: white;
 }
 .hr-btn-secondary:hover {
   background: #f8fafc;

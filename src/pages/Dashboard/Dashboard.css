@@ -96,18 +96,22 @@
 /* Colored Bar at Top */
 .stat-card:nth-child(1) {
   border-top: 8px solid #3b82f6;
+  background-color: white;
 }
 
 .stat-card:nth-child(2) {
   border-top: 8px solid #10b981;
+  background-color: white;
 }
 
 .stat-card:nth-child(3) {
   border-top: 8px solid #f59e0b;
+  background-color: white;
 }
 
 .stat-card:nth-child(4) {
   border-top: 8px solid #8b5cf6;
+  background-color: white;
 }
 
 /* Content Grid */

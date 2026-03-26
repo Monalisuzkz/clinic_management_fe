@@ -980,9 +980,6 @@ const LabsTab: React.FC<{ patient: Patient }> = ({ patient }) => (
               >
                 {lab.status}
               </span>
-              <button className="hr-lab-download">
-                <Download size={13} />
-              </button>
             </div>
           </div>
         ))}
