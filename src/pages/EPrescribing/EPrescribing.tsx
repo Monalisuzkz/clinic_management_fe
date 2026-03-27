@@ -1,4 +1,5 @@
 import * as React from "react";
+import { useEffect, useMemo } from "react";
 import {
   Search,
   Plus,
@@ -447,17 +448,23 @@ const EPrescribing: React.FC = () => {
     });
   };
 
-  const filtered = prescriptions.filter((rx) => {
-    const matchSearch =
-      rx.patient.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      rx.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      rx.doctor.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      rx.medications.some((m) =>
-        m.drug.toLowerCase().includes(searchQuery.toLowerCase()),
-      );
-    const matchStatus = statusFilter === "All" || rx.status === statusFilter;
-    return matchSearch && matchStatus;
-  });
+  useEffect(() => {
+    console.log("Filter changed:", statusFilter);
+  }, [statusFilter]);
+
+  const filtered = useMemo(() => {
+    return prescriptions.filter((rx) => {
+      const matchSearch =
+        rx.patient.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        rx.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        rx.doctor.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        rx.medications.some((m) =>
+          m.drug.toLowerCase().includes(searchQuery.toLowerCase()),
+        );
+      const matchStatus = statusFilter === "All" || rx.status === statusFilter;
+      return matchSearch && matchStatus;
+    });
+  }, [prescriptions, searchQuery, statusFilter]);
 
   // Enhanced validation with dosage format check
   const validateForm = () => {
@@ -630,7 +637,7 @@ const EPrescribing: React.FC = () => {
                 <button
                   key={s}
                   className={`rx-filter-tab ${statusFilter === s ? "active" : ""}`}
-                  onClick={() => setStatusFilter(s)}
+                  onClick={() => setStatusFilter(s)} // This is correct
                 >
                   {s}
                 </button>

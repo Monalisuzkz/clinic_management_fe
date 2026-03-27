@@ -737,7 +737,10 @@ const PatientModal: React.FC<PatientModalProps> = ({
                 value={form.contact}
                 onChange={(e) => {
                   const v = e.target.value;
-                  if (v === "" || /^[0-9+\s-]*$/.test(v)) set("contact", v);
+                  // Block any letters - only allow numbers, +, -, spaces, and parentheses
+                  if (v === "" || /^[0-9+\-\s()]*$/.test(v)) {
+                    set("contact", v);
+                  }
                 }}
               />
               {errors.contact && (
@@ -1085,7 +1088,12 @@ const RxTab: React.FC<{ patient: Patient }> = ({ patient }) => (
 const isValidName = (v: string) => /^[a-zA-Z\s.'-]+$/.test(v.trim());
 const isValidAge = (v: string) =>
   /^\d+$/.test(v.trim()) && Number(v) > 0 && Number(v) < 150;
-const isValidContact = (v: string) => /^[0-9+\-\s()]+$/.test(v.trim());
+const isValidContact = (v: string) => {
+  const trimmed = v.trim();
+  if (!trimmed) return false;
+  // Must contain only numbers, +, -, spaces, and parentheses
+  return /^[0-9+\-\s()]+$/.test(trimmed) && !/[a-zA-Z]/.test(trimmed);
+};
 const isValidTagList = (v: string) =>
   v === "" || /^[a-zA-Z\s]+(,[a-zA-Z\s]*)*$/.test(v);
 
