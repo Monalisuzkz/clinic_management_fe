@@ -536,7 +536,11 @@ const ItemModal: React.FC<ItemModalProps> = ({
                 className={`inv-input ${errors.name ? "error" : ""}`}
                 placeholder="e.g. Paracetamol 500mg"
                 value={form.name}
-                onChange={(e) => set("name", e.target.value)}
+                onChange={(e) => {
+                  const v = e.target.value;
+                  if (v === "" || /^[a-zA-Z0-9\s()%.,/-]*$/.test(v))
+                    set("name", v);
+                }}
               />
               {errors.name && <span className="inv-error">{errors.name}</span>}
             </div>
@@ -753,7 +757,10 @@ const AdjustModal: React.FC<AdjustModalProps> = ({
               className="inv-input"
               placeholder="Reason for adjustment..."
               value={note}
-              onChange={(e) => setNote(e.target.value)}
+              onChange={(e) => {
+                const v = e.target.value;
+                if (v === "" || /^[a-zA-Z0-9\s.,'-]*$/.test(v)) setNote(v);
+              }}
             />
           </div>
           {qty && !error && (

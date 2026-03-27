@@ -737,7 +737,11 @@ const CreateInvoiceModal: React.FC<CreateInvoiceModalProps> = ({
                 className="bl-input"
                 placeholder="e.g. PhilHealth, Maxicare"
                 value={insurance}
-                onChange={(e) => setInsurance(e.target.value)}
+                onChange={(e) => {
+                  const v = e.target.value;
+                  if (v === "" || /^[a-zA-Z0-9\s,.-]*$/.test(v))
+                    setInsurance(v);
+                }}
               />
             </div>
             <div className="bl-field">
@@ -748,7 +752,10 @@ const CreateInvoiceModal: React.FC<CreateInvoiceModalProps> = ({
                 className="bl-input"
                 placeholder="Additional notes..."
                 value={notes}
-                onChange={(e) => setNotes(e.target.value)}
+                onChange={(e) => {
+                  const v = e.target.value;
+                  if (v === "" || /^[a-zA-Z0-9\s,.'"-]*$/.test(v)) setNotes(v);
+                }}
               />
             </div>
           </div>
@@ -788,7 +795,8 @@ const CreateInvoiceModal: React.FC<CreateInvoiceModalProps> = ({
                   value={s.cost}
                   onChange={(e) => {
                     const value = Math.max(0, Number(e.target.value));
-                    updateService(i, "cost", value.toString());
+                    if (!isNaN(value))
+                      updateService(i, "cost", value.toString());
                   }}
                 />
               </div>

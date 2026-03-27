@@ -210,9 +210,12 @@ const DrugSearch: React.FC<DrugSearchProps> = ({
           placeholder={placeholder ?? "Search drug..."}
           value={query}
           onChange={(e) => {
-            setQuery(e.target.value);
-            onChange(e.target.value);
-            setOpen(true);
+            const v = e.target.value;
+            if (v === "" || /^[a-zA-Z0-9\s.-]*$/.test(v)) {
+              setQuery(v);
+              onChange(v);
+              setOpen(true);
+            }
           }}
           onFocus={() => setOpen(true)}
         />
@@ -463,7 +466,12 @@ const EPrescribing: React.FC = () => {
     if (!form.drug) e.drug = "Select a drug";
     if (!form.dosage.trim()) e.dosage = "Enter dosage";
     // Validate dosage format (should contain numbers and unit like mg, mcg, etc.)
-    if (form.dosage.trim() && !/^[\d.]+(mg|mcg|g|ml|tablet|cap|puff|inhalation|spray|drop)?/i.test(form.dosage.trim())) {
+    if (
+      form.dosage.trim() &&
+      !/^[\d.]+(mg|mcg|g|ml|tablet|cap|puff|inhalation|spray|drop)?/i.test(
+        form.dosage.trim(),
+      )
+    ) {
       e.dosage = "Enter valid dosage (e.g., 500mg, 10ml)";
     }
     // Check for duplicate medication in extra meds
@@ -471,7 +479,9 @@ const EPrescribing: React.FC = () => {
       form.drug,
       ...extraMeds.map((m) => m.drug).filter(Boolean),
     ];
-    const duplicates = allMeds.filter((item, index) => allMeds.indexOf(item) !== index);
+    const duplicates = allMeds.filter(
+      (item, index) => allMeds.indexOf(item) !== index,
+    );
     if (duplicates.length > 0) {
       e.drug = `Duplicate medication: ${duplicates[0]}`;
     }
@@ -538,10 +548,10 @@ const EPrescribing: React.FC = () => {
       { drug: "", dosage: "", frequency: FREQUENCIES[0] },
     ]);
   };
-  
+
   const removeExtraMed = (i: number) =>
     setExtraMeds((prev) => prev.filter((_, idx) => idx !== i));
-    
+
   const updateExtraMed = (i: number, field: string, value: string) => {
     setExtraMeds((prev) =>
       prev.map((m, idx) => (idx === i ? { ...m, [field]: value } : m)),
@@ -562,7 +572,7 @@ const EPrescribing: React.FC = () => {
             <p>Date: ${rx.dateIssued}</p>
             <h2>Medications:</h2>
             <ul>
-              ${rx.medications.map(m => `<li>${m.drug} - ${m.dosage} - ${m.frequency}</li>`).join("")}
+              ${rx.medications.map((m) => `<li>${m.drug} - ${m.dosage} - ${m.frequency}</li>`).join("")}
             </ul>
             <p>Instructions: ${rx.instructions}</p>
           </body>
@@ -790,7 +800,11 @@ const EPrescribing: React.FC = () => {
                     className={`rx-input ${formErrors.dosage ? "error" : ""}`}
                     placeholder="e.g. 500mg"
                     value={form.dosage}
-                    onChange={(e) => setField("dosage", e.target.value)}
+                    onChange={(e) => {
+                      const v = e.target.value;
+                      if (v === "" || /^[a-zA-Z0-9.]*$/.test(v))
+                        setField("dosage", v);
+                    }}
                   />
                   {formErrors.dosage && (
                     <span className="rx-field-error">{formErrors.dosage}</span>
@@ -840,9 +854,11 @@ const EPrescribing: React.FC = () => {
                       className="rx-input"
                       placeholder="e.g. 10mg"
                       value={med.dosage}
-                      onChange={(e) =>
-                        updateExtraMed(i, "dosage", e.target.value)
-                      }
+                      onChange={(e) => {
+                        const v = e.target.value;
+                        if (v === "" || /^[a-zA-Z0-9.]*$/.test(v))
+                          updateExtraMed(i, "dosage", v);
+                      }}
                     />
                   </div>
                   <div className="rx-field">

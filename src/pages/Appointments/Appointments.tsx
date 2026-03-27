@@ -189,9 +189,17 @@ const BookModal: React.FC<BookModalProps> = ({
 
   const [errors, setErrors] = React.useState<Record<string, string>>({});
 
+  const isValidName = (name: string) => /^[a-zA-Z\s.'-]+$/.test(name.trim());
   const validate = () => {
     const e: Record<string, string> = {};
-    if (!form.patient.trim()) e.patient = "Patient name is required";
+
+    if (!form.patient.trim()) {
+      e.patient = "Patient name is required";
+    } else if (!isValidName(form.patient)) {
+      e.patient =
+        "Name must contain letters only — no digits or special characters";
+    }
+
     if (!form.date.trim()) e.date = "Date is required";
 
     const selectedDate = new Date(form.date);
@@ -209,7 +217,7 @@ const BookModal: React.FC<BookModalProps> = ({
         editData?.id,
       );
       if (conflict) {
-        e.time = `Dr. ${form.doctor} already has an appointment at ${form.time} on this date`;
+        e.time = `${form.doctor} already has an appointment at ${form.time} on this date`;
       }
     }
 
@@ -283,7 +291,13 @@ const BookModal: React.FC<BookModalProps> = ({
               className={`modal-input ${errors.patient ? "error" : ""}`}
               placeholder="Enter patient full name"
               value={form.patient}
-              onChange={(e) => set("patient", e.target.value)}
+              disabled={rescheduleMode}
+              onChange={(e) => {
+                const value = e.target.value;
+                if (value === "" || /^[a-zA-Z\s.'-]*$/.test(value)) {
+                  set("patient", value);
+                }
+              }}
             />
             {errors.patient && (
               <span className="modal-error">{errors.patient}</span>
@@ -296,6 +310,7 @@ const BookModal: React.FC<BookModalProps> = ({
               <select
                 className="modal-select"
                 value={form.doctor}
+                disabled={rescheduleMode}
                 onChange={(e) => set("doctor", e.target.value)}
               >
                 {DOCTORS.map((d) => (
@@ -348,7 +363,8 @@ const BookModal: React.FC<BookModalProps> = ({
                 <button
                   key={s}
                   className={`modal-status-btn ${form.status === s ? "active " + s.toLowerCase() : ""}`}
-                  onClick={() => set("status", s)}
+                  onClick={() => !rescheduleMode && set("status", s)}
+                  disabled={rescheduleMode}
                 >
                   {form.status === s && <Check size={12} />} {s}
                 </button>
@@ -365,11 +381,11 @@ const BookModal: React.FC<BookModalProps> = ({
               placeholder="Add any notes or reason for visit..."
               rows={3}
               value={form.notes}
+              disabled={rescheduleMode}
               onChange={(e) => set("notes", e.target.value)}
             />
           </div>
         </div>
-
         <div className="modal-footer">
           <button className="modal-btn-cancel" onClick={onClose}>
             Cancel

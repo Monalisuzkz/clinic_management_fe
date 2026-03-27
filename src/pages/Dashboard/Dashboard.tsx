@@ -6,6 +6,7 @@ import {
   DollarSign,
   TrendingUp,
   Clock,
+  Search,
   Activity,
 } from "lucide-react";
 import "./dashboard.css";
@@ -133,6 +134,14 @@ const appointments = [
 ];
 
 const Dashboard: React.FC = () => {
+  const [apptSearch, setApptSearch] = React.useState("");
+
+  const filteredAppointments = appointments.filter(
+    (apt) =>
+      apt.patient.toLowerCase().includes(apptSearch.toLowerCase()) ||
+      apt.doctor.toLowerCase().includes(apptSearch.toLowerCase()),
+  );
+
   return (
     <>
       {/* Header */}
@@ -143,21 +152,14 @@ const Dashboard: React.FC = () => {
         </p>
       </div>
 
-      {/* Stats Grid - Small Compact Cards */}
+      {/* Stats Grid */}
       <div className="stats-grid">
         {stats.map((stat) => {
           const IconComponent = stat.icon;
           return (
-            <div
-              key={stat.title}
-              className="stat-card"
-              style={{ borderLeftColor: stat.color }}
-            >
+            <div key={stat.title} className="stat-card" style={{ borderLeftColor: stat.color }}>
               <div className="stat-header">
-                <div
-                  className="stat-icon-wrapper"
-                  style={{ backgroundColor: `${stat.color}15` }}
-                >
+                <div className="stat-icon-wrapper" style={{ backgroundColor: `${stat.color}15` }}>
                   <IconComponent size={20} color={stat.color} />
                 </div>
                 <div className="stat-info">
@@ -184,10 +186,7 @@ const Dashboard: React.FC = () => {
           </div>
           <div className="activity-container scrollable">
             {recentActivity.map((activity) => (
-              <div
-                key={activity.id}
-                className={`activity-item activity-${activity.type}`}
-              >
+              <div key={activity.id} className={`activity-item activity-${activity.type}`}>
                 <div className="activity-dot"></div>
                 <div className="activity-content">
                   <p className="activity-text">{activity.text}</p>
@@ -220,7 +219,6 @@ const Dashboard: React.FC = () => {
               <span className="status-label">Today's Revenue</span>
               <span className="status-value">$4,250</span>
             </div>
-            {/* New Status Items */}
             <div className="status-item">
               <span className="status-label">Occupancy Rate</span>
               <span className="status-value">78%</span>
@@ -239,6 +237,16 @@ const Dashboard: React.FC = () => {
       <div className="card appointments-card">
         <div className="card-header">
           <h2 className="card-title">Today's Appointments</h2>
+          <div className="appt-search-wrap">
+            <Search size={15} className="appt-search-icon-dash" />
+            <input
+              type="text"
+              placeholder="Search patient or doctor..."
+              className="appt-search-input-dash"
+              value={apptSearch}
+              onChange={(e) => setApptSearch(e.target.value)}
+            />
+          </div>
         </div>
         <div className="table-container scrollable">
           <table className="appointments-table">
@@ -251,29 +259,35 @@ const Dashboard: React.FC = () => {
               </tr>
             </thead>
             <tbody>
-              {appointments.map((apt) => (
-                <tr key={apt.id}>
-                  <td>
-                    <div className="patient-info">
-                      <span className="patient-avatar">{apt.avatar}</span>
-                      <span>{apt.patient}</span>
-                    </div>
-                  </td>
-                  <td>
-                    <div className="time-info">
-                      <Clock size={14} /> {apt.time}
-                    </div>
-                  </td>
-                  <td>{apt.doctor}</td>
-                  <td>
-                    <span
-                      className={`status-badge ${apt.status.toLowerCase()}`}
-                    >
-                      {apt.status}
-                    </span>
+              {filteredAppointments.length === 0 ? (
+                <tr>
+                  <td colSpan={4} className="appt-table-empty">
+                    No appointments found
                   </td>
                 </tr>
-              ))}
+              ) : (
+                filteredAppointments.map((apt) => (
+                  <tr key={apt.id}>
+                    <td>
+                      <div className="patient-info">
+                        <span className="patient-avatar">{apt.avatar}</span>
+                        <span>{apt.patient}</span>
+                      </div>
+                    </td>
+                    <td>
+                      <div className="time-info">
+                        <Clock size={14} /> {apt.time}
+                      </div>
+                    </td>
+                    <td>{apt.doctor}</td>
+                    <td>
+                      <span className={`status-badge ${apt.status.toLowerCase()}`}>
+                        {apt.status}
+                      </span>
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>

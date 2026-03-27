@@ -580,13 +580,31 @@ const PatientModal: React.FC<PatientModalProps> = ({
 
   const handleSubmit = () => {
     const e: Record<string, string> = {};
-    if (!form.name.trim()) e.name = "Name is required";
-    if (!form.age || isNaN(Number(form.age))) e.age = "Valid age required";
+
+    if (!form.name.trim()) e.name = "Full name is required";
+    else if (!isValidName(form.name))
+      e.name =
+        "Name must contain letters only — no digits or special characters";
+
+    if (!form.age.trim()) e.age = "Age is required";
+    else if (!isValidAge(form.age))
+      e.age = "Age must be a valid number (1–149)";
+
     if (!form.contact.trim()) e.contact = "Contact is required";
+    else if (!isValidContact(form.contact))
+      e.contact = "Contact must contain numbers only — no letters";
+
+    if (!isValidTagList(form.allergies))
+      e.allergies = "Only letters and commas allowed (e.g. Penicillin, Latex)";
+
+    if (!isValidTagList(form.conditions))
+      e.conditions = "Only letters and commas allowed (e.g. Asthma, Diabetes)";
+
     if (Object.keys(e).length) {
       setErrors(e);
       return;
     }
+
     onSave({
       id: editData?.id ?? `P-${String(Date.now()).slice(-3)}`,
       name: form.name,
@@ -641,11 +659,15 @@ const PatientModal: React.FC<PatientModalProps> = ({
               <label className="hr-modal-label">
                 Full Name <span className="hr-required">*</span>
               </label>
+              {/* Full Name */}
               <input
                 className={`hr-modal-input ${errors.name ? "error" : ""}`}
                 placeholder="Enter full name"
                 value={form.name}
-                onChange={(e) => set("name", e.target.value)}
+                onChange={(e) => {
+                  const v = e.target.value;
+                  if (v === "" || /^[a-zA-Z\s.'-]*$/.test(v)) set("name", v);
+                }}
               />
               {errors.name && (
                 <span className="hr-modal-error">{errors.name}</span>
@@ -655,11 +677,15 @@ const PatientModal: React.FC<PatientModalProps> = ({
               <label className="hr-modal-label">
                 Age <span className="hr-required">*</span>
               </label>
+              {/* Age */}
               <input
                 className={`hr-modal-input ${errors.age ? "error" : ""}`}
                 placeholder="e.g. 35"
                 value={form.age}
-                onChange={(e) => set("age", e.target.value)}
+                onChange={(e) => {
+                  const v = e.target.value;
+                  if (v === "" || /^\d*$/.test(v)) set("age", v);
+                }}
               />
               {errors.age && (
                 <span className="hr-modal-error">{errors.age}</span>
@@ -709,7 +735,10 @@ const PatientModal: React.FC<PatientModalProps> = ({
                 className={`hr-modal-input ${errors.contact ? "error" : ""}`}
                 placeholder="+1 555-0000"
                 value={form.contact}
-                onChange={(e) => set("contact", e.target.value)}
+                onChange={(e) => {
+                  const v = e.target.value;
+                  if (v === "" || /^[0-9+\s-]*$/.test(v)) set("contact", v);
+                }}
               />
               {errors.contact && (
                 <span className="hr-modal-error">{errors.contact}</span>
@@ -742,8 +771,15 @@ const PatientModal: React.FC<PatientModalProps> = ({
               className="hr-modal-input"
               placeholder="e.g. Penicillin, Shellfish"
               value={form.allergies}
-              onChange={(e) => set("allergies", e.target.value)}
+              onChange={(e) => {
+                const v = e.target.value;
+                if (v === "" || /^[a-zA-Z0-9\s,.-]*$/.test(v))
+                  set("allergies", v);
+              }}
             />
+            {errors.allergies && (
+              <span className="hr-modal-error">{errors.allergies}</span>
+            )}
           </div>
           <div className="hr-modal-field">
             <label className="hr-modal-label">
@@ -752,10 +788,17 @@ const PatientModal: React.FC<PatientModalProps> = ({
             </label>
             <input
               className="hr-modal-input"
-              placeholder="e.g. Hypertension, Diabetes"
+              placeholder="e.g. Hypertension, Type 2 Diabetes"
               value={form.conditions}
-              onChange={(e) => set("conditions", e.target.value)}
+              onChange={(e) => {
+                const v = e.target.value;
+                if (v === "" || /^[a-zA-Z0-9\s,.-]*$/.test(v))
+                  set("conditions", v);
+              }}
             />
+            {errors.conditions && (
+              <span className="hr-modal-error">{errors.conditions}</span>
+            )}
           </div>
         </div>
         <div className="hr-modal-footer">
@@ -1039,6 +1082,13 @@ const RxTab: React.FC<{ patient: Patient }> = ({ patient }) => (
   </div>
 );
 
+const isValidName = (v: string) => /^[a-zA-Z\s.'-]+$/.test(v.trim());
+const isValidAge = (v: string) =>
+  /^\d+$/.test(v.trim()) && Number(v) > 0 && Number(v) < 150;
+const isValidContact = (v: string) => /^[0-9+\-\s()]+$/.test(v.trim());
+const isValidTagList = (v: string) =>
+  v === "" || /^[a-zA-Z\s]+(,[a-zA-Z\s]*)*$/.test(v);
+
 // ── Main ───────────────────────────────────────────────────
 const HealthRecords: React.FC = () => {
   const [patients, setPatients] = React.useState<Patient[]>(initialPatients);
@@ -1121,11 +1171,11 @@ const HealthRecords: React.FC = () => {
     } else setTab(patient.id, "notes");
   };
 
-// ── PDF Download Helper (CDN + safe typing) ────
-const downloadHealthRecordPDF = async (patient: Patient) => {
-  const { jsPDF } = await import("jspdf");
+  // ── PDF Download Helper (CDN + safe typing) ────
+  const downloadHealthRecordPDF = async (patient: Patient) => {
+    const { jsPDF } = await import("jspdf");
 
-  const htmlContent = `
+    const htmlContent = `
     <div style="font-family: Arial, sans-serif; padding: 32px; color:#0f172a; max-width: 800px; margin: 0 auto;">
       <!-- Header -->
       <div style="text-align: center; margin-bottom: 32px;">
@@ -1155,10 +1205,14 @@ const downloadHealthRecordPDF = async (patient: Patient) => {
       <div style="margin-bottom: 24px;">
         <h2 style="font-size: 18px; margin: 0 0 12px 0; border-bottom: 2px solid #e2e8f0; padding-bottom: 8px;">Allergies</h2>
         <div style="display: flex; flex-wrap: wrap; gap: 8px;">
-          ${patient.allergies.map(allergy => `
+          ${patient.allergies
+            .map(
+              (allergy) => `
             <span style="background: #fee2e2; color: #b91c1c; padding: 4px 12px; border-radius: 20px; font-size: 13px;">${allergy}</span>
-          `).join("")}
-          ${patient.allergies.length === 0 ? '<p style="color: #94a3b8;">No allergies recorded</p>' : ''}
+          `,
+            )
+            .join("")}
+          ${patient.allergies.length === 0 ? '<p style="color: #94a3b8;">No allergies recorded</p>' : ""}
         </div>
       </div>
 
@@ -1166,27 +1220,41 @@ const downloadHealthRecordPDF = async (patient: Patient) => {
       <div style="margin-bottom: 24px;">
         <h2 style="font-size: 18px; margin: 0 0 12px 0; border-bottom: 2px solid #e2e8f0; padding-bottom: 8px;">Medical Conditions</h2>
         <div style="display: flex; flex-wrap: wrap; gap: 8px;">
-          ${patient.conditions.map(condition => `
+          ${patient.conditions
+            .map(
+              (condition) => `
             <span style="background: #fef3c7; color: #b45309; padding: 4px 12px; border-radius: 20px; font-size: 13px;">${condition}</span>
-          `).join("")}
-          ${patient.conditions.length === 0 ? '<p style="color: #94a3b8;">No conditions recorded</p>' : ''}
+          `,
+            )
+            .join("")}
+          ${patient.conditions.length === 0 ? '<p style="color: #94a3b8;">No conditions recorded</p>' : ""}
         </div>
       </div>
 
       <!-- Diagnoses -->
-      ${patient.diagnoses.length > 0 ? `
+      ${
+        patient.diagnoses.length > 0
+          ? `
       <div style="margin-bottom: 24px;">
         <h2 style="font-size: 18px; margin: 0 0 12px 0; border-bottom: 2px solid #e2e8f0; padding-bottom: 8px;">Diagnoses</h2>
         <div style="display: flex; flex-wrap: wrap; gap: 8px;">
-          ${patient.diagnoses.map(diagnosis => `
+          ${patient.diagnoses
+            .map(
+              (diagnosis) => `
             <span style="background: #dbeafe; color: #1e40af; padding: 4px 12px; border-radius: 20px; font-size: 13px;">${diagnosis}</span>
-          `).join("")}
+          `,
+            )
+            .join("")}
         </div>
       </div>
-      ` : ''}
+      `
+          : ""
+      }
 
       <!-- Lab Results -->
-      ${patient.labs.length > 0 ? `
+      ${
+        patient.labs.length > 0
+          ? `
       <div style="margin-bottom: 24px;">
         <h2 style="font-size: 18px; margin: 0 0 12px 0; border-bottom: 2px solid #e2e8f0; padding-bottom: 8px;">Lab Results</h2>
         <table style="width:100%; border-collapse: collapse; margin-top: 12px;">
@@ -1199,38 +1267,54 @@ const downloadHealthRecordPDF = async (patient: Patient) => {
             </tr>
           </thead>
           <tbody>
-            ${patient.labs.map(lab => `
+            ${patient.labs
+              .map(
+                (lab) => `
               <tr>
                 <td style="padding: 8px 12px; border-bottom: 1px solid #f1f5f9;">${lab.name}</td>
                 <td style="padding: 8px 12px; border-bottom: 1px solid #f1f5f9;">${lab.date}</td>
                 <td style="padding: 8px 12px; border-bottom: 1px solid #f1f5f9;">${lab.result}</td>
                 <td style="padding: 8px 12px; border-bottom: 1px solid #f1f5f9;">
-                  <span style="display:inline-block; padding: 2px 8px; border-radius: 12px; font-size: 11px; background: ${lab.status === 'Normal' ? '#d1fae5' : '#fee2e2'}; color: ${lab.status === 'Normal' ? '#047857' : '#b91c1c'}">
+                  <span style="display:inline-block; padding: 2px 8px; border-radius: 12px; font-size: 11px; background: ${lab.status === "Normal" ? "#d1fae5" : "#fee2e2"}; color: ${lab.status === "Normal" ? "#047857" : "#b91c1c"}">
                     ${lab.status}
                   </span>
                 </td>
               </tr>
-            `).join("")}
+            `,
+              )
+              .join("")}
           </tbody>
         </table>
       </div>
-      ` : ''}
+      `
+          : ""
+      }
 
       <!-- Clinical Notes -->
-      ${patient.notes.length > 0 ? `
+      ${
+        patient.notes.length > 0
+          ? `
       <div style="margin-bottom: 24px;">
         <h2 style="font-size: 18px; margin: 0 0 12px 0; border-bottom: 2px solid #e2e8f0; padding-bottom: 8px;">Clinical Notes</h2>
-        ${patient.notes.map(note => `
+        ${patient.notes
+          .map(
+            (note) => `
           <div style="background: #faf9fe; padding: 12px; border-radius: 8px; margin-bottom: 12px;">
             <p style="margin: 0 0 4px 0;"><strong>${note.date}</strong> - Dr. ${note.doctor}</p>
             <p style="margin: 0; color: #334155;">${note.note}</p>
           </div>
-        `).join("")}
+        `,
+          )
+          .join("")}
       </div>
-      ` : ''}
+      `
+          : ""
+      }
 
       <!-- Medications -->
-      ${patient.medications.length > 0 ? `
+      ${
+        patient.medications.length > 0
+          ? `
       <div style="margin-bottom: 24px;">
         <h2 style="font-size: 18px; margin: 0 0 12px 0; border-bottom: 2px solid #e2e8f0; padding-bottom: 8px;">Medications</h2>
         <table style="width:100%; border-collapse: collapse; margin-top: 12px;">
@@ -1245,7 +1329,9 @@ const downloadHealthRecordPDF = async (patient: Patient) => {
             </tr>
           </thead>
           <tbody>
-            ${patient.medications.map(med => `
+            ${patient.medications
+              .map(
+                (med) => `
               <tr>
                 <td style="padding: 8px 12px; border-bottom: 1px solid #f1f5f9;">${med.name}</td>
                 <td style="padding: 8px 12px; border-bottom: 1px solid #f1f5f9;">${med.dosage}</td>
@@ -1254,17 +1340,21 @@ const downloadHealthRecordPDF = async (patient: Patient) => {
                 <td style="padding: 8px 12px; border-bottom: 1px solid #f1f5f9;">${med.startDate}</td>
                 <td style="padding: 8px 12px; border-bottom: 1px solid #f1f5f9;">
                   <span style="display:inline-block; padding: 2px 8px; border-radius: 12px; font-size: 11px; 
-                    ${med.status === 'Active' ? 'background:#d1fae5;color:#047857;' : ''}
-                    ${med.status === 'Discontinued' ? 'background:#fee2e2;color:#b91c1c;' : ''}">
+                    ${med.status === "Active" ? "background:#d1fae5;color:#047857;" : ""}
+                    ${med.status === "Discontinued" ? "background:#fee2e2;color:#b91c1c;" : ""}">
                     ${med.status}
                   </span>
                 </td>
               </tr>
-            `).join("")}
+            `,
+              )
+              .join("")}
           </tbody>
         </table>
       </div>
-      ` : ''}
+      `
+          : ""
+      }
 
       <!-- Footer -->
       <div style="margin-top: 32px; font-size: 10px; color: #94a3b8; border-top: 1px solid #e2e8f0; padding-top: 12px; text-align: center;">
@@ -1273,23 +1363,25 @@ const downloadHealthRecordPDF = async (patient: Patient) => {
     </div>
   `;
 
-  const container = document.createElement("div");
-  container.innerHTML = htmlContent;
-  document.body.appendChild(container);
+    const container = document.createElement("div");
+    container.innerHTML = htmlContent;
+    document.body.appendChild(container);
 
-  const doc = new jsPDF("p", "mm", "a4");
+    const doc = new jsPDF("p", "mm", "a4");
 
-  await doc.html(container, {
-    callback: (doc) => {
-      doc.save(`${patient.name.replace(/\s+/g, "_")}_HEALTH_RECORD_${new Date().toISOString().slice(0, 10)}.pdf`);
-      document.body.removeChild(container);
-    },
-    x: 10,
-    y: 10,
-    width: 190,
-    windowWidth: 800,
-  });
-};
+    await doc.html(container, {
+      callback: (doc) => {
+        doc.save(
+          `${patient.name.replace(/\s+/g, "_")}_HEALTH_RECORD_${new Date().toISOString().slice(0, 10)}.pdf`,
+        );
+        document.body.removeChild(container);
+      },
+      x: 10,
+      y: 10,
+      width: 190,
+      windowWidth: 800,
+    });
+  };
 
   // 📥 EXPORT CSV for individual patient
   const handleExportCSV = (patient: Patient) => {
@@ -1630,7 +1722,7 @@ const downloadHealthRecordPDF = async (patient: Patient) => {
                               <div
                                 className="inv-dropdown-item"
                                 onClick={() => {
-                                  downloadHealthRecordPDF(patient); 
+                                  downloadHealthRecordPDF(patient);
                                   setShowExportDropdown(false);
                                 }}
                               >

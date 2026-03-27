@@ -24,7 +24,7 @@ const Profile: React.FC = () => {
 
   const [notifications, setNotifications] = useState(true);
   const [language, setLanguage] = useState("English");
-  
+
   const [toast, setToast] = useState<string | null>(null);
 
   const showToast = (msg: string) => {
@@ -59,13 +59,13 @@ const Profile: React.FC = () => {
         return;
       }
       showToast("Password changed successfully");
-      
+
       setCurrentPassword("");
       setNewPassword("");
       setConfirmPassword("");
       return;
     }
-    
+
     showToast("Profile updated successfully");
   };
 
@@ -77,7 +77,7 @@ const Profile: React.FC = () => {
           <Check size={15} /> {toast}
         </div>
       )}
-      
+
       {/* LEFT SIDEBAR - Redesigned */}
       <div className="profile-left">
         <div className="avatar-container">
@@ -156,7 +156,9 @@ const Profile: React.FC = () => {
             </div>
             <div className="info-content">
               <span className="info-label">Notifications</span>
-              <span className={`info-value ${notifications ? "active" : "inactive"}`}>
+              <span
+                className={`info-value ${notifications ? "active" : "inactive"}`}
+              >
                 {notifications ? "Enabled" : "Disabled"}
               </span>
             </div>
@@ -171,48 +173,77 @@ const Profile: React.FC = () => {
           <h3>Personal Information</h3>
           <div className="row">
             <label>Name:</label>
-            <input value={name} onChange={(e) => setName(e.target.value)} />
+            <input
+              value={name}
+              placeholder="Enter full name"
+              onChange={(e) => {
+                const v = e.target.value;
+                if (v === "" || /^[a-zA-Z\s.'-]*$/.test(v)) setName(v);
+              }}
+            />
           </div>
           <div className="row">
             <label>Email:</label>
-            <input value={email} onChange={(e) => setEmail(e.target.value)} />
+            <input
+              value={email}
+              placeholder="Enter email address"
+              onChange={(e) => {
+                const v = e.target.value;
+                if (v === "" || /^[a-zA-Z0-9@._+-]*$/.test(v)) setEmail(v);
+              }}
+            />
           </div>
           <div className="row">
             <label>Contact:</label>
-            <input value={contact} onChange={(e) => setContact(e.target.value)} />
+            <input
+              value={contact}
+              placeholder="Enter contact number"
+              onChange={(e) => {
+                const v = e.target.value;
+                if (v === "" || /^[0-9+\s-]*$/.test(v)) setContact(v);
+              }}
+            />
           </div>
           <div className="row">
             <label>Role:</label>
-            <input value={role} onChange={(e) => setRole(e.target.value)} />
+            <select value={role} onChange={(e) => setRole(e.target.value)}>
+              <option>Administrator</option>
+              <option>Doctor</option>
+              <option>Nurse</option>
+              <option>Receptionist</option>
+              <option>Pharmacist</option>
+              <option>Lab Technician</option>
+              <option>Billing Staff</option>
+              <option>Medical Records Staff</option>
+            </select>
           </div>
         </section>
-
         {/* CHANGE PASSWORD */}
         <section className="section-box">
           <h3>Change Password</h3>
           <div className="row">
             <label>Current Password:</label>
-            <input 
-              type="password" 
-              value={currentPassword} 
+            <input
+              type="password"
+              value={currentPassword}
               onChange={(e) => setCurrentPassword(e.target.value)}
               placeholder="Enter current password"
             />
           </div>
           <div className="row">
             <label>New Password:</label>
-            <input 
-              type="password" 
-              value={newPassword} 
+            <input
+              type="password"
+              value={newPassword}
               onChange={(e) => setNewPassword(e.target.value)}
               placeholder="Enter new password"
             />
           </div>
           <div className="row">
             <label>Confirm Password:</label>
-            <input 
-              type="password" 
-              value={confirmPassword} 
+            <input
+              type="password"
+              value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
               placeholder="Confirm new password"
             />
@@ -241,7 +272,10 @@ const Profile: React.FC = () => {
           </div>
           <div className="row">
             <label>Language:</label>
-            <select value={language} onChange={(e) => setLanguage(e.target.value)}>
+            <select
+              value={language}
+              onChange={(e) => setLanguage(e.target.value)}
+            >
               <option>English</option>
               <option>Tagalog</option>
             </select>
