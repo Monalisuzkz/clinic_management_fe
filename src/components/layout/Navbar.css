@@ -1,0 +1,381 @@
+.navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 2rem;
+  background: white;
+  border-bottom: 1px solid #f1f5f9;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  gap: 2rem;
+  height: 60px;
+}
+
+/* Left Section - Clinic Info */
+.navbar-left {
+  flex: 1;
+}
+
+.clinic-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.clinic-name {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #0f172a;
+  margin: 0;
+  letter-spacing: -0.5px;
+}
+
+.clinic-details {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 0.85rem;
+  color: #64748b;
+}
+
+.detail-item {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.detail-divider {
+  color: #cbd5e1;
+}
+
+/* Center Section - Status */
+.navbar-center {
+  flex: 0 0 auto;
+}
+
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.5rem 1.25rem;
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  border-radius: 9999px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #047857;
+}
+
+.status-dot {
+  width: 0.5rem;
+  height: 0.5rem;
+  background: #10b981;
+  border-radius: 50%;
+  display: inline-block;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+/* Right Section - Actions */
+.navbar-right {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  flex: 1;
+  justify-content: flex-end;
+}
+
+.navbar-item {
+  position: relative;
+}
+
+/* Navbar Button */
+.navbar-button {
+  position: relative;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 8px;
+  display: flex;
+  align-items: center;
+}
+
+.navbar-button:hover {
+  color: #0f172a;
+}
+
+.navbar-button svg {
+  width: 20px;
+  height: 20px;
+}
+
+/* Notification Badge */
+.notification-badge {
+  position: absolute;
+  top: 0px;
+  right: 0px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  background: #ef4444;
+  color: white;
+  border-radius: 50%;
+  font-size: 0.75rem;
+  pointer-events: none;
+  font-weight: 700;
+}
+
+/* User Button */
+.user-button {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.5rem;
+  transition: all 0.2s;
+}
+
+.user-button:hover {
+  background: #f8fafc;
+}
+
+.user-avatar {
+  font-size: 1.5rem;
+}
+
+.user-info {
+  display: flex;
+  flex-direction: column;
+  text-align: left;
+  gap: 0.25rem;
+}
+
+.user-name {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #0f172a;
+}
+
+.user-role {
+  font-size: 0.75rem;
+  color: #94a3b8;
+}
+
+/* Dropdowns */
+.dropdown {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  margin-top: 0.75rem;
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.625rem;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+  z-index: 100;
+  min-width: 300px;
+}
+
+.notification-dropdown {
+  min-width: 280px; /* Reduced from 350px */
+  max-width: 320px; /* Max width to prevent it from getting too wide */
+}
+
+.user-dropdown {
+  min-width: 160px; /* Reduced from 200px */
+  width: auto;
+}
+
+/* Compact dropdown header */
+.dropdown-header {
+  padding: 0.75rem 1rem; /* Reduced padding from 1rem */
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.dropdown-header h3 {
+  margin: 0;
+  font-size: 0.85rem; /* Smaller font */
+  font-weight: 600; /* Slightly less bold */
+  color: #0f172a;
+}
+
+/* Notification List */
+.notification-list {
+  max-height: 360px; /* Slightly reduced */
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.notification-item-content {
+  padding: 0.75rem 1rem; /* Reduced padding from 1rem */
+  border-bottom: 1px solid #f1f5f9;
+  transition: background 0.2s;
+  cursor: pointer;
+}
+
+.notification-item-content p {
+  margin: 0 0 0.4rem 0; /* Reduced bottom margin */
+  font-size: 0.85rem; /* Smaller font */
+  color: #0f172a;
+  font-weight: 500;
+  line-height: 1.4; /* Better line height */
+}
+
+.notification-time {
+  font-size: 0.7rem; /* Smaller font */
+  color: #94a3b8;
+}
+
+.notification-item-content:hover {
+  background: #f8fafc;
+}
+
+.notification-item-content:last-child {
+  border-bottom: none;
+}
+
+.notification-item-content p {
+  margin: 0 0 0.5rem 0;
+  font-size: 0.9rem;
+  color: #0f172a;
+  font-weight: 500;
+}
+
+.notification-time {
+  font-size: 0.8rem;
+  color: #94a3b8;
+}
+
+/* Dropdown Footer */
+.dropdown-footer {
+  padding: 0.6rem 1rem; /* Reduced padding */
+  border-top: 1px solid #f1f5f9;
+  text-align: center;
+}
+
+.view-all-link {
+  color: #3b82f6;
+  text-decoration: none;
+  font-size: 0.85rem;
+  font-weight: 600;
+  transition: color 0.2s;
+}
+
+.view-all-link:hover {
+  color: #1d4ed8;
+}
+
+/* User Dropdown Items */
+.dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem; /* Reduced gap */
+  padding: 0.6rem 1rem; /* Reduced padding */
+  color: #0f172a;
+  text-decoration: none;
+  font-size: 0.85rem; /* Smaller font */
+  transition: all 0.2s;
+  border: none;
+  background: none;
+  cursor: pointer;
+  width: 100%;
+  text-align: left;
+}
+
+.dropdown-item svg {
+  width: 14px; /* Smaller icons */
+  height: 14px;
+}
+
+.dropdown-divider {
+  margin: 0.4rem 0; /* Reduced margin */
+  border: none;
+  border-top: 1px solid #f1f5f9;
+}
+
+.dropdown-item:hover {
+  background: #f8fafc;
+  color: #3b82f6;
+}
+
+.dropdown-item.logout {
+  color: #ef4444;
+}
+
+.dropdown-item.logout:hover {
+  background: #fee2e2;
+}
+
+.dropdown-divider {
+  margin: 0.5rem 0;
+  border: none;
+  border-top: 1px solid #f1f5f9;
+}
+
+.dropdown-item svg {
+  width: 16px;
+  height: 16px;
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+  .navbar {
+    padding: 1rem;
+    gap: 1rem;
+  }
+
+  .clinic-details {
+    display: none;
+  }
+
+  .navbar-center {
+    display: none;
+  }
+}
+
+@media (max-width: 768px) {
+  .navbar {
+    flex-wrap: wrap;
+    padding: 0.75rem 1rem;
+  }
+
+  .navbar-left {
+    flex: 1 0 100%;
+  }
+
+  .clinic-name {
+    font-size: 0.95rem;
+  }
+
+  .navbar-right {
+    gap: 1rem;
+  }
+
+.dropdown {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  margin-top: 0.75rem;
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.625rem;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+  z-index: 100;
+  min-width: 240px; /* Reduced from 300px */
+  width: auto; /* Let content determine width */
+}
+
+  .user-info {
+    display: none;
+  }
+}
